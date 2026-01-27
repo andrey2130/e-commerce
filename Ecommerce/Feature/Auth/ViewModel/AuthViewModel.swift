@@ -19,7 +19,7 @@ class AuthViewModel {
     var isRegistered: Bool = false
     var isLoginned: Bool = false
 
-    var localStorageService: LocalStorageService = .shared
+    private let localStorageService: LocalStorageService = .shared
 
     private let authService = AuthService.shared
 

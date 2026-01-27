@@ -25,8 +25,10 @@ struct RegisterView: View {
                 })
                 .padding(.bottom, 24)
             }
-            .onChange(of: viewModel.isRegistered) {
-                coordinator.push(.onboarding)
+            .onChange(of: viewModel.isRegistered) { _, registered in
+                if registered {
+                    coordinator.push(.onboarding)
+                }
             }
             .padding(.horizontal, 24)
             .padding(.top, 16)
@@ -73,7 +75,9 @@ private struct RegisterForm: View {
                 label: "Email",
                 placeholder: "Email",
                 text: $viewModel.email,
-                validationError: [.emptyEmail, .invalidEmail].contains(viewModel.validationError)
+                validationError: [.emptyEmail, .invalidEmail].contains(
+                    viewModel.validationError
+                )
                     ? viewModel.validationError?.errorDescription : nil
             ) { field in
                 field
@@ -88,7 +92,9 @@ private struct RegisterForm: View {
                 placeholder: "Password",
                 text: $viewModel.password,
                 isPassword: true,
-                validationError: [.emptyPassword, .shortPassword].contains(viewModel.validationError)
+                validationError: [.emptyPassword, .shortPassword].contains(
+                    viewModel.validationError
+                )
                     ? viewModel.validationError?.errorDescription : nil
             ) { field in
                 field.textContentType(.password)
@@ -99,7 +105,8 @@ private struct RegisterForm: View {
                 placeholder: "Confirm Password",
                 text: $viewModel.confirmPassword,
                 isPassword: true,
-                validationError: viewModel.validationError == .passwordsDoNotMatch
+                validationError: viewModel.validationError
+                    == .passwordsDoNotMatch
                     ? "Passwords do not match" : nil
             ) { field in
                 field.textContentType(.newPassword)
@@ -134,7 +141,9 @@ private struct FormField<Content: View>: View {
         text: Binding<String>,
         isPassword: Bool = false,
         validationError: String? = nil,
-        @ViewBuilder configuration: @escaping (CustomTextField) -> Content = { $0 as! Content }
+        @ViewBuilder configuration: @escaping (CustomTextField) -> Content = {
+            $0 as! Content
+        }
     ) {
         self.label = label
         self.placeholder = placeholder

@@ -28,10 +28,12 @@ struct LoginView: View {
             .padding(.horizontal, 24)
             .padding(.top, 16)
         }
-        .onChange(of: viewModel.isLoginned) {
-            coordinator.push(.onboarding)
-        }
         .navigationBarBackButtonHidden(true)
+        .onChange(of: viewModel.isLoginned) { _, logged in
+            if logged {
+                coordinator.push(.onboarding)
+            }
+        }
     }
 }
 
