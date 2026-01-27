@@ -2,38 +2,42 @@
 //  LoginView.swift
 //  Ecommerce
 //
-//  Created by Andrii Duda on 26.01.2026.
+//  Created by Andrii Duda on 27.01.2026.
 //
 
 import SwiftUI
 
 struct LoginView: View {
-    @Environment(Coordinator.self) var coordinator
-    @State private var email = ""
-    @State private var password = ""
+    @Environment(Coordinator.self) private var coordinator
+    @State private var viewModel = AuthViewModel()
 
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
-                header
+                HeaderSection()
                     .padding(.bottom, 40)
 
-                form
+                LoginForm(viewModel: viewModel)
                     .padding(.bottom, 24)
 
-                footer
+                FooterSection(onSignUpTap: {
+                    coordinator.push(.register)
+                })
+                .padding(.bottom, 24)
             }
             .padding(.horizontal, 24)
             .padding(.top, 16)
+        }
+        .onChange(of: viewModel.isLoginned) {
+            coordinator.push(.onboarding)
         }
         .navigationBarBackButtonHidden(true)
     }
 }
 
-// MARK: - Components
-extension LoginView {
-
-    fileprivate var header: some View {
+// MARK: - Header Section
+private struct HeaderSection: View {
+    var body: some View {
         VStack(spacing: 12) {
             Text("Welcome Back")
                 .font(AppFont.title)
@@ -45,88 +49,127 @@ extension LoginView {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
+}
 
-    fileprivate var form: some View {
+// MARK: - Login Form
+private struct LoginForm: View {
+    @Bindable var viewModel: AuthViewModel
+
+    var body: some View {
         VStack(spacing: 16) {
-            emailField
-            passwordField
-            forgotPasswordButton
+            FormField(
+                label: "Email",
+                placeholder: "Email",
+                text: $viewModel.email,
+                validationError: [.emptyEmail, .invalidEmail].contains(
+                    viewModel.validationError
+                )
+                    ? viewModel.validationError?.errorDescription : nil
+            ) { field in
+                field
+                    .textInputAutocapitalization(.never)
+                    .keyboardType(.emailAddress)
+                    .textContentType(.emailAddress)
+                    .autocorrectionDisabled()
+            }
+
+            FormField(
+                label: "Password",
+                placeholder: "Password",
+                text: $viewModel.password,
+                isPassword: true,
+                validationError: [.emptyPassword, .shortPassword].contains(
+                    viewModel.validationError
+                )
+                    ? viewModel.validationError?.errorDescription : nil
+            ) { field in
+                field.textContentType(.password)
+            }
 
             CustomButton(
                 title: "Sign In",
                 font: AppFont.buttonSmall,
-                backgroundColor: .black
+                backgroundColor: .black,
+                isLoading: viewModel.isLoading
             ) {
-                // TODO: Sign in action
+                Task {
+                    await viewModel.login()
+                }
             }
         }
     }
+}
 
-    fileprivate var emailField: some View {
-        LabeledField(title: "Email") {
-            CustomTextField(title: "Email", text: $email)
+// MARK: - Reusable Form Field
+private struct FormField<Content: View>: View {
+    let label: String
+    let placeholder: String
+    @Binding var text: String
+    var isPassword: Bool = false
+    var validationError: String?
+    let configuration: (CustomTextField) -> Content
+
+    init(
+        label: String,
+        placeholder: String,
+        text: Binding<String>,
+        isPassword: Bool = false,
+        validationError: String? = nil,
+        @ViewBuilder configuration: @escaping (CustomTextField) -> Content = {
+            $0 as! Content
         }
+    ) {
+        self.label = label
+        self.placeholder = placeholder
+        self._text = text
+        self.isPassword = isPassword
+        self.validationError = validationError
+        self.configuration = configuration
     }
 
-    fileprivate var passwordField: some View {
-        LabeledField(title: "Password") {
-            // If later you want show/hide password, swap this for your own field
-            CustomTextField(
-                title: "Password",
-                text: $password,
-                isPassword: true
-            )
-        }
-    }
-
-    fileprivate var forgotPasswordButton: some View {
-        Button {
-            // TODO: forgot password action
-        } label: {
-            Text("Forgot Password?")
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(label)
                 .font(AppFont.subhead)
-                .foregroundColor(.black)
-        }
-        .frame(maxWidth: .infinity, alignment: .trailing)
-    }
+                .foregroundColor(.primary)
 
-    fileprivate var footer: some View {
-        HStack(spacing: 4) {
+            configuration(
+                CustomTextField(
+                    title: placeholder,
+                    text: $text,
+                    isPassword: isPassword
+                )
+            )
+
+            if let error = validationError {
+                Text(error)
+                    .font(.caption)
+                    .foregroundColor(.red)
+            }
+        }
+    }
+}
+
+// MARK: - Footer Section
+private struct FooterSection: View {
+    let onSignUpTap: () -> Void
+
+    var body: some View {
+        HStack(spacing: 6) {
             Text("Don't have an account?")
                 .font(AppFont.subhead)
                 .foregroundColor(.gray)
 
-            Button {
-                coordinator.push(.register)
-            } label: {
+            Button(action: onSignUpTap) {
                 Text("Sign Up")
                     .font(AppFont.subhead)
-                    .fontWeight(.semibold)  
+                    .fontWeight(.semibold)
                     .foregroundColor(.black)
             }
-        }
-        .padding(.bottom, 24)
-    }
-}
-
-// MARK: - Reusable small view
-private struct LabeledField<Content: View>: View {
-    let title: String
-    @ViewBuilder let content: Content
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(AppFont.subhead)
-                .foregroundColor(.primary)
-
-            content
         }
     }
 }
 
 #Preview {
-    NavigationView {
-        LoginView()
-    }
+    LoginView()
 }
