@@ -17,6 +17,7 @@ class AuthViewModel {
     var isLoading: Bool = false
     var validationError: AuthValidationError?
     var isRegistered: Bool = false
+    var isLoginned: Bool = false
 
     var localStorageService: LocalStorageService = .shared
 
@@ -50,7 +51,29 @@ class AuthViewModel {
         } catch let error as AuthValidationError {
             validationError = error
         } catch {
-            validationError = .invalidEmail  
+            validationError = .invalidEmail
+        }
+    }
+
+    func login() async {
+        validationError = nil
+
+        do {
+            try AuthValidator.validateLogin(email: email, password: password)
+            isLoading = true
+            defer { isLoading = false }
+            let responce = try await authService.login(
+                email: email,
+                password: password
+            )
+            if let token = responce.token {
+                localStorageService.saveToken(token)
+            }
+            isLoginned = true
+        } catch let error as AuthValidationError {
+            validationError = error
+        } catch {
+            validationError = .invalidEmail
         }
     }
 }

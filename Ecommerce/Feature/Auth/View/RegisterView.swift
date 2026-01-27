@@ -108,7 +108,8 @@ private struct RegisterForm: View {
             CustomButton(
                 title: "Sign Up",
                 font: AppFont.buttonSmall,
-                backgroundColor: .black
+                backgroundColor: .black,
+                isLoading: viewModel.isLoading
             ) {
                 Task {
                     await viewModel.register()

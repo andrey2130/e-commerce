@@ -28,6 +28,9 @@ struct LoginView: View {
             .padding(.horizontal, 24)
             .padding(.top, 16)
         }
+        .onChange(of: viewModel.isLoginned) {
+            coordinator.push(.onboarding)
+        }
         .navigationBarBackButtonHidden(true)
     }
 }
@@ -57,7 +60,11 @@ private struct LoginForm: View {
             FormField(
                 label: "Email",
                 placeholder: "Email",
-                text: $viewModel.email
+                text: $viewModel.email,
+                validationError: [.emptyEmail, .invalidEmail].contains(
+                    viewModel.validationError
+                )
+                    ? viewModel.validationError?.errorDescription : nil
             ) { field in
                 field
                     .textInputAutocapitalization(.never)
@@ -70,7 +77,11 @@ private struct LoginForm: View {
                 label: "Password",
                 placeholder: "Password",
                 text: $viewModel.password,
-                isPassword: true
+                isPassword: true,
+                validationError: [.emptyPassword, .shortPassword].contains(
+                    viewModel.validationError
+                )
+                    ? viewModel.validationError?.errorDescription : nil
             ) { field in
                 field.textContentType(.password)
             }
@@ -78,9 +89,11 @@ private struct LoginForm: View {
             CustomButton(
                 title: "Sign In",
                 font: AppFont.buttonSmall,
-                backgroundColor: .black
+                backgroundColor: .black,
+                isLoading: viewModel.isLoading
             ) {
                 Task {
+                    await viewModel.login()
                 }
             }
         }
