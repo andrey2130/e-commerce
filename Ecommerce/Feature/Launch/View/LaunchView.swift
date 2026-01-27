@@ -9,7 +9,7 @@ import SwiftUI
 
 struct LaunchView: View {
     @Environment(Coordinator.self) private var coordinator
-
+    var localStorageService: LocalStorageService = .shared
     @State private var scale: CGFloat = 0.92
     @State private var opacity: Double = 0.0
 
@@ -56,7 +56,11 @@ struct LaunchView: View {
             }
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.3) {
-                coordinator.push(.login)
+                if localStorageService.isLoggedIn {
+                    coordinator.push(.onboarding)
+                } else {
+                    coordinator.push(.login)
+                }
             }
         }
     }

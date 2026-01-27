@@ -8,10 +8,8 @@
 import SwiftUI
 
 struct RegisterView: View {
-    @Environment(Coordinator.self) var coordinator
-    @State private var email = ""
-    @State private var password = ""
-    @State private var confirmPassword = ""
+    @Environment(Coordinator.self) private var coordinator
+    @State private var viewModel = AuthViewModel()
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -19,16 +17,16 @@ struct RegisterView: View {
                 HeaderSection()
                     .padding(.bottom, 40)
 
-                FormSection(
-                    email: $email,
-                    password: $password,
-                    confirmPassword: $confirmPassword
-                )
-                .padding(.bottom, 24)
+                RegisterForm(viewModel: viewModel)
+                    .padding(.bottom, 24)
 
                 FooterSection(onSignInTap: {
                     coordinator.pop()
                 })
+                .padding(.bottom, 24)
+            }
+            .onChange(of: viewModel.isRegistered) {
+                coordinator.push(.onboarding)
             }
             .padding(.horizontal, 24)
             .padding(.top, 16)
@@ -37,7 +35,7 @@ struct RegisterView: View {
 }
 
 // MARK: - Header Section
-struct HeaderSection: View {
+private struct HeaderSection: View {
     var body: some View {
         VStack(spacing: 12) {
             Text("Create Account")
@@ -52,90 +50,124 @@ struct HeaderSection: View {
     }
 }
 
-// MARK: - Form Section
-struct FormSection: View {
-    @Binding var email: String
-    @Binding var password: String
-    @Binding var confirmPassword: String
+// MARK: - Register Form
+private struct RegisterForm: View {
+    @Bindable var viewModel: AuthViewModel
 
     var body: some View {
         VStack(spacing: 16) {
-            EmailFieldWidget(email: $email)
-            PasswordFieldWidget(password: $password)
-            ConfirmPasswordFieldWidget(confirmPassword: $confirmPassword)
+            FormField(
+                label: "Name",
+                placeholder: "Name",
+                text: $viewModel.name,
+                validationError: viewModel.validationError == .emptyName
+                    ? "Name is required" : nil
+            ) { field in
+                field
+                    .textInputAutocapitalization(.words)
+                    .textContentType(.name)
+                    .autocorrectionDisabled()
+            }
+
+            FormField(
+                label: "Email",
+                placeholder: "Email",
+                text: $viewModel.email,
+                validationError: [.emptyEmail, .invalidEmail].contains(viewModel.validationError)
+                    ? viewModel.validationError?.errorDescription : nil
+            ) { field in
+                field
+                    .textInputAutocapitalization(.never)
+                    .keyboardType(.emailAddress)
+                    .textContentType(.emailAddress)
+                    .autocorrectionDisabled()
+            }
+
+            FormField(
+                label: "Password",
+                placeholder: "Password",
+                text: $viewModel.password,
+                isPassword: true,
+                validationError: [.emptyPassword, .shortPassword].contains(viewModel.validationError)
+                    ? viewModel.validationError?.errorDescription : nil
+            ) { field in
+                field.textContentType(.password)
+            }
+
+            FormField(
+                label: "Confirm Password",
+                placeholder: "Confirm Password",
+                text: $viewModel.confirmPassword,
+                isPassword: true,
+                validationError: viewModel.validationError == .passwordsDoNotMatch
+                    ? "Passwords do not match" : nil
+            ) { field in
+                field.textContentType(.newPassword)
+            }
 
             CustomButton(
                 title: "Sign Up",
                 font: AppFont.buttonSmall,
                 backgroundColor: .black
             ) {
-                // TODO: Sign up action
+                Task {
+                    await viewModel.register()
+                }
             }
         }
     }
 }
 
-// MARK: - Email Field Widget
-struct EmailFieldWidget: View {
-    @Binding var email: String
+// MARK: - Reusable Form Field
+private struct FormField<Content: View>: View {
+    let label: String
+    let placeholder: String
+    @Binding var text: String
+    var isPassword: Bool = false
+    var validationError: String?
+    let configuration: (CustomTextField) -> Content
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Email")
-                .font(AppFont.subhead)
-                .foregroundColor(.primary)
-
-            CustomTextField(title: "Email", text: $email)
-                .textInputAutocapitalization(.never)
-                .keyboardType(.emailAddress)
-                .textContentType(.emailAddress)
-                .autocorrectionDisabled()
-        }
+    init(
+        label: String,
+        placeholder: String,
+        text: Binding<String>,
+        isPassword: Bool = false,
+        validationError: String? = nil,
+        @ViewBuilder configuration: @escaping (CustomTextField) -> Content = { $0 as! Content }
+    ) {
+        self.label = label
+        self.placeholder = placeholder
+        self._text = text
+        self.isPassword = isPassword
+        self.validationError = validationError
+        self.configuration = configuration
     }
-}
-
-// MARK: - Password Field Widget
-struct PasswordFieldWidget: View {
-    @Binding var password: String
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Password")
+            Text(label)
                 .font(AppFont.subhead)
                 .foregroundColor(.primary)
 
-            CustomTextField(
-                title: "Password",
-                text: $password,
-                isPassword: true
+            configuration(
+                CustomTextField(
+                    title: placeholder,
+                    text: $text,
+                    isPassword: isPassword
+                )
             )
-            .textContentType(.newPassword)
-        }
-    }
-}
 
-// MARK: - Confirm Password Field Widget
-struct ConfirmPasswordFieldWidget: View {
-    @Binding var confirmPassword: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Confirm Password")
-                .font(AppFont.subhead)
-                .foregroundColor(.primary)
-
-            CustomTextField(
-                title: "Confirm Password",
-                text: $confirmPassword,
-                isPassword: true
-            )
-            .textContentType(.newPassword)
+            if let error = validationError {
+                Text(error)
+                    .font(.caption)
+                    .foregroundColor(.red)
+            }
         }
     }
 }
 
 // MARK: - Footer Section
-struct FooterSection: View {
+private struct FooterSection: View {
     let onSignInTap: () -> Void
 
     var body: some View {
@@ -151,12 +183,9 @@ struct FooterSection: View {
                     .foregroundColor(.black)
             }
         }
-        .padding(.bottom, 24)
     }
 }
 
 #Preview {
-    NavigationView {
-        RegisterView()
-    }
+    RegisterView()
 }

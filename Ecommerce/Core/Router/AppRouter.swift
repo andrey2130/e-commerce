@@ -8,7 +8,7 @@
 import SwiftUI
 
 enum Page: String, Identifiable {
-    case login, launch, register
+    case login, launch, register, onboarding
 
     var id: String {
         self.rawValue
@@ -24,6 +24,7 @@ class Coordinator {
     }
 
     func pop() {
+        guard !path.isEmpty else { return }
         path.removeLast()
     }
 
@@ -40,6 +41,8 @@ class Coordinator {
             LoginView()
         case .register:
             RegisterView()
+        case .onboarding:
+            OnboardingView()
         }
     }
 }
