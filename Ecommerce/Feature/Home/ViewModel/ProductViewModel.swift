@@ -39,6 +39,7 @@ final class ProductViewModel {
             self.loadingState = products.isEmpty ? .empty : .completed
             print("state: \(self.loadingState)")
         } catch {
+            print("error = \(error.localizedDescription)")
             self.loadingState = .error(error)
         }
     }

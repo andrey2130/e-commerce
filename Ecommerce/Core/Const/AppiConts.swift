@@ -7,7 +7,7 @@
 
 struct AppiConts {
     static let baseUrl: String = "http://localhost:3000/api/"
-    static let registerUrl: String = "\(baseUrl)auth/register"
-    static let loginUrl: String = "\(baseUrl)auth/login"
-    static let getProductUrl: String = "\(baseUrl)products"
+    static let registerUrl: String = "auth/register"
+    static let loginUrl: String = "auth/login"
+    static let getProductUrl: String = "products"
 }
