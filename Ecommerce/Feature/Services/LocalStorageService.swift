@@ -24,6 +24,9 @@ final class LocalStorageService {
     func saveToken(_ token: String) {
         UserDefaults.standard.set(token, forKey: tokenKey)
     }
+    func getToken() -> String? {
+        UserDefaults.standard.string(forKey: tokenKey)
+    }
 
     func loguserOut() {
         UserDefaults.standard.removeObject(forKey: tokenKey)

@@ -31,7 +31,7 @@ struct LoginView: View {
         .navigationBarBackButtonHidden(true)
         .onChange(of: viewModel.isLoginned) { _, logged in
             if logged {
-                coordinator.push(.onboarding)
+                coordinator.push(.home)
             }
         }
     }
