@@ -44,7 +44,7 @@ class Coordinator {
         case .onboarding:
             OnboardingView()
         case .home:
-            HomeView()
+            BottomNavBar()
         }
     }
 }
