@@ -76,4 +76,8 @@ class AuthViewModel {
             validationError = .invalidEmail
         }
     }
+
+    func logout() {
+        localStorageService.loguserOut()
+    }
 }

@@ -11,6 +11,8 @@ enum NetworkError: LocalizedError {
     case invalidResponse
     case serverError(statusCode: Int)
     case decodingError
+    case unAuthorized
+    
     
     var errorDescription: String? {
         switch self {
@@ -22,6 +24,8 @@ enum NetworkError: LocalizedError {
             return "Server Error: \(code)"
         case .decodingError:
             return "Json Decode Error"
+        case .unAuthorized:
+            return "User not found"
         }
     }
 }

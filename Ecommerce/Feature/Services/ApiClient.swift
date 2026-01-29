@@ -74,7 +74,7 @@ final class ApiClient {
                 )
             }
         }
-        print("✅ REQUEST:", request.httpMethod ?? "-", request.url?.absoluteString ?? "nil")
+
         let (data, response) = try await session.data(for: request)
 
         guard let http = response as? HTTPURLResponse else {

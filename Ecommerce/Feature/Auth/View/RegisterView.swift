@@ -27,7 +27,7 @@ struct RegisterView: View {
             }
             .onChange(of: viewModel.isRegistered) { _, registered in
                 if registered {
-                    coordinator.push(.onboarding)
+                    coordinator.push(.home)
                 }
             }
             .padding(.horizontal, 24)
