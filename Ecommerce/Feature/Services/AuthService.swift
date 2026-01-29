@@ -95,23 +95,3 @@ class AuthService {
     }
 
 }
-
-enum NetworkError: LocalizedError {
-    case invalidURL
-    case invalidResponse
-    case serverError(statusCode: Int)
-    case decodingError
-
-    var errorDescription: String? {
-        switch self {
-        case .invalidURL:
-            return "Invalid URL"
-        case .invalidResponse:
-            return "Invalid Responce From Server"
-        case .serverError(let code):
-            return "Server Error: \(code)"
-        case .decodingError:
-            return "Json Decode Error"
-        }
-    }
-}
