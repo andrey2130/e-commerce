@@ -52,10 +52,6 @@ struct HomeView: View {
             .padding(.horizontal, 16)
 
         }
-        .task {
-            await viewModel.loadProducts()
-        }
-
     }
 
     private var header: some View {
