@@ -9,7 +9,7 @@ import SwiftUI
 
 struct CustomButton: View {
     var title: String
-    var font: Font
+    var font: Font?
     var textColor: Color = .white
     var backgroundColor: Color = .black
     var isTransparent: Bool = false
