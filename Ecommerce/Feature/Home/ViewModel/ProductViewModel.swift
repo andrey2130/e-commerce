@@ -17,11 +17,30 @@ final class ProductViewModel {
     var selectedProduct: ProductModel?
 
     private let productService: ProductService = .shared
+    private let localStorage: LocalStorageService = .shared
+    let favoriteService: FavoritesService = .shared
+
+    private func preloadFavoritesIfNeeded() async {
+        guard let token = localStorage.getToken(), !token.isEmpty else {
+            return
+        }
+
+        guard favoriteService.favoriteProductIds.isEmpty else {
+            return
+        }
+
+        do {
+            try await favoriteService.loadFavorites(token: token)
+        } catch {
+            print("Favorites preload error:", error.localizedDescription)
+        }
+    }
 
     func loadProducts() async {
         guard canLoadMore else { return }
 
         do {
+            await preloadFavoritesIfNeeded()
             let response = try await productService.getProduct(
                 page: currentPage
             )
@@ -48,16 +67,16 @@ final class ProductViewModel {
     }
 
     func loadProductDetails(id: Int) async {
+        detailsState = .loading
+
+        await preloadFavoritesIfNeeded()
 
         do {
             let response = try await productService.getProductById(id)
             selectedProduct = response.data
-            print(selectedProduct?.id)
-            print(selectedProduct?.name)
-            self.detailsState = .completed
-
+            detailsState = .completed
         } catch {
-            self.detailsState = .error(error)
+            detailsState = .error(error)
         }
     }
 
@@ -75,5 +94,47 @@ final class ProductViewModel {
             await loadProducts()
         }
 
+    }
+
+    func setAsFavorites(id: Int) async throws {
+        guard let token = localStorage.getToken(), !token.isEmpty else {
+            return
+        }
+
+        do {
+            _ = try await favoriteService.addToFavorites(
+                productId: id,
+                token: token
+            )
+
+        } catch {
+            print(error.localizedDescription)
+        }
+
+    }
+
+    func deleteFavorites(id: Int) async throws {
+        guard let token = localStorage.getToken(), !token.isEmpty else {
+            return
+        }
+        do {
+            _ = try await favoriteService.removeFromFavorites(
+                productId: id,
+                token: token
+            )
+        } catch {
+            print("error deleting favorites \(error.localizedDescription)")
+        }
+    }
+
+    func loadFavorites() async throws {
+        guard let token = localStorage.getToken(), !token.isEmpty else {
+            return
+        }
+        do {
+            _ = try await favoriteService.loadFavorites(token: token)
+        } catch {
+            print("error loading favorites \(error.localizedDescription)")
+        }
     }
 }

@@ -11,7 +11,7 @@ struct ProductCard: View {
     let product: ProductModel
     var imageHeight: CGFloat = 180
     var cornerRadius: CGFloat = 12
-    var onFavoriteToggle: (() -> Void)?
+    var onFavoriteToggle: () -> Void
     var isFavorite: Bool = false
     var onTap: (() -> Void)
     var body: some View {
@@ -93,7 +93,7 @@ struct FavoriteButton: View {
             action?()
         } label: {
             Image(systemName: isFavorite ? "heart.fill" : "heart")
-                .foregroundStyle(.white)
+                .foregroundStyle(isFavorite ? .red : .white)
                 .shadow(
                     color: .black.opacity(0.3),
                     radius: 15,

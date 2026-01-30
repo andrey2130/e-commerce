@@ -69,11 +69,34 @@ struct HomeView: View {
     private var grid: some View {
         LazyVGrid(columns: columns, spacing: 16) {
             ForEach(viewModel.products) { product in
-                ProductCard(product: product) {
+                ProductCard(
+
+                    product: product,
+                    onFavoriteToggle: {
+                        Task {
+                            if viewModel.favoriteService.isFavorite(product.id)
+                            {
+                                try await viewModel.deleteFavorites(
+                                    id: product.id
+                                )
+                            } else {
+                                try await viewModel.setAsFavorites(
+                                    id: product.id
+                                )
+                            }
+                        }
+                    },
+                    isFavorite: viewModel.favoriteService.isFavorite(
+                        product.id
+                    ),
+
+                ) {
                     coordinator.push(.productDetails(id: product.id))
                 }
                 .task {
-                    await viewModel.loadMore(currentItem: product)
+                    
+                        await viewModel.loadMore(currentItem: product)
+                    
                 }
             }
             .padding(.top, 16)

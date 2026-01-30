@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ProductDetailsView: View {
     let productId: Int
-    @State var viewModel = ProductViewModel()
+    @State private var viewModel = ProductViewModel()
 
     var body: some View {
         VStack {
@@ -33,9 +33,15 @@ struct ProductDetailsView: View {
 
                                 Divider()
 
-                                ProductDescriptionView(description: product.description)
+                                ProductDescriptionView(
+                                    description: product.description
+                                )
 
-                                ProductActionsView()
+                                ProductActionsView(
+                                    product: product,
+                                    viewModel: viewModel
+
+                                )
                             }
                         }
                     }
@@ -63,7 +69,6 @@ struct ProductDetailsView: View {
         }
     }
 }
-
 
 // MARK: - Subviews
 
@@ -116,7 +121,7 @@ private struct ProductHeaderView: View {
         .padding(.horizontal)
         .padding(.vertical)
     }
-    
+
 }
 
 private struct ProductPriceView: View {
@@ -127,7 +132,7 @@ private struct ProductPriceView: View {
             .font(AppFont.title)
             .padding(.horizontal)
     }
-    
+
 }
 
 private struct ProductDescriptionView: View {
@@ -147,14 +152,25 @@ private struct ProductDescriptionView: View {
 }
 
 private struct ProductActionsView: View {
+    var product: ProductModel
+    @Bindable var viewModel: ProductViewModel
     var body: some View {
         HStack(spacing: 12) {
             Button {
-                // TODO: favorite action
+                Task {
+                    if viewModel.favoriteService.isFavorite(product.id) {
+                        try await viewModel.deleteFavorites(id: product.id)
+                    } else {
+                        try await viewModel.setAsFavorites(id: product.id)
+                    }
+                }
             } label: {
-                Image(systemName: "heart")
+                Image(systemName: viewModel.favoriteService.isFavorite(product.id) ? "heart.fill" : "heart")
                     .font(.title3)
-                    .foregroundStyle(.black)
+                    .foregroundStyle(
+                        viewModel.favoriteService.isFavorite(product.id)
+                            ? .red : .black
+                    )
                     .frame(width: 50, height: 50)
                     .background(Color(.systemGray6))
                     .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -167,9 +183,6 @@ private struct ProductActionsView: View {
         .padding(.horizontal)
     }
 }
-
-
-
 
 #Preview {
     ProductDetailsView(productId: 9)
