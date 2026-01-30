@@ -7,11 +7,19 @@
 
 import SwiftUI
 
-enum Page: String, Identifiable {
+enum Page: Hashable, Identifiable {
     case login, launch, register, onboarding, home
+    case productDetails(id: Int)
 
     var id: String {
-        self.rawValue
+        switch self {
+        case .login: "login"
+        case .launch: "launch"
+        case .register: "register"
+        case .onboarding: "onboarding"
+        case .home: "home"
+        case .productDetails(let id): "productDetails_\(id)"
+        }
     }
 
 }
@@ -45,6 +53,8 @@ class Coordinator {
             OnboardingView()
         case .home:
             BottomNavBar()
+        case .productDetails(let id):
+            ProductDetailsView(productId: id)
         }
     }
 }

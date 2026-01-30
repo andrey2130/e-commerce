@@ -13,9 +13,10 @@ struct ProductCard: View {
     var cornerRadius: CGFloat = 12
     var onFavoriteToggle: (() -> Void)?
     var isFavorite: Bool = false
-
+    var onTap: (() -> Void)
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+
             ProductImageView(
                 imageURL: product.images.first,
                 height: imageHeight,
@@ -25,6 +26,10 @@ struct ProductCard: View {
             )
 
             ProductInfoView(product: product)
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onTap()
         }
     }
 }
@@ -39,12 +44,12 @@ struct ProductImageView: View {
 
     var body: some View {
         imageContent
-            .frame(maxWidth: .infinity) // Додано
+            .frame(maxWidth: .infinity)
             .frame(height: height)
             .clipped()
             .cornerRadius(cornerRadius)
     }
-    
+
     @ViewBuilder
     private var imageContent: some View {
         if let imageURL, let url = URL(string: imageURL) {
@@ -57,8 +62,7 @@ struct ProductImageView: View {
                 case .success(let image):
                     image
                         .resizable()
-                        .scaledToFill() // Залишаємо, але з maxWidth вище це працюватиме коректно
-                        .frame(maxWidth: .infinity) // Додано для гарантії
+                        .scaledToFill()
                         .overlay(alignment: .topTrailing) {
                             FavoriteButton(
                                 isFavorite: isFavorite,

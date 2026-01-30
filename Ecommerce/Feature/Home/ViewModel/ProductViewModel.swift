@@ -11,8 +11,11 @@ import SwiftUI
 final class ProductViewModel {
     var products: [ProductModel] = []
     var loadingState: ContentLoadingState = .loading
+    var detailsState: DetailsLoadingState = .loading
     var canLoadMore: Bool = true
     var currentPage: Int = 1
+    var selectedProduct: ProductModel?
+
     private let productService: ProductService = .shared
 
     func loadProducts() async {
@@ -41,6 +44,20 @@ final class ProductViewModel {
         } catch {
             print("error = \(error.localizedDescription)")
             self.loadingState = .error(error)
+        }
+    }
+
+    func loadProductDetails(id: Int) async {
+
+        do {
+            let response = try await productService.getProductById(id)
+            selectedProduct = response.data
+            print(selectedProduct?.id)
+            print(selectedProduct?.name)
+            self.detailsState = .completed
+
+        } catch {
+            self.detailsState = .error(error)
         }
     }
 

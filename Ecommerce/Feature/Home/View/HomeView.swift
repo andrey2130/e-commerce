@@ -9,6 +9,7 @@ import SwiftUI
 
 struct HomeView: View {
     @State private var viewModel = ProductViewModel()
+    @Environment(Coordinator.self) private var coordinator
 
     let columns = [
         GridItem(.flexible(), spacing: 16),
@@ -34,8 +35,8 @@ struct HomeView: View {
 
         }
         .navigationBarBackButtonHidden(true)
-        .onAppear {
-            Task {
+        .task {
+            if viewModel.products.isEmpty {
                 await viewModel.loadProducts()
             }
         }
@@ -68,18 +69,18 @@ struct HomeView: View {
     private var grid: some View {
         LazyVGrid(columns: columns, spacing: 16) {
             ForEach(viewModel.products) { product in
-                ProductCard(product: product)
-                    .task {
-                        await viewModel.loadMore(currentItem: product)
-                    }
+                ProductCard(product: product) {
+                    coordinator.push(.productDetails(id: product.id))
+                }
+                .task {
+                    await viewModel.loadMore(currentItem: product)
+                }
             }
             .padding(.top, 16)
 
         }
 
     }
-    
-    
 
 }
 
