@@ -8,54 +8,19 @@
 import SwiftUI
 
 struct ProductDetailsView: View {
+
     let productId: Int
     @State private var viewModel = ProductViewModel()
 
     var body: some View {
         VStack {
-            switch viewModel.detailsState {
-            case .loading:
+            switch viewModel.productDetailsState {
+
+            case .idle, .loading:
                 ProgressView()
 
-            case .completed:
-                if let product = viewModel.selectedProduct {
-                    ScrollView {
-                        VStack(spacing: 0) {
-
-                            ProductImagesView(images: product.images)
-
-                            VStack(alignment: .leading, spacing: 16) {
-                                ProductHeaderView(product: product)
-
-                                Divider()
-
-                                ProductPriceView(price: product.price)
-
-                                Divider()
-
-                                ProductDescriptionView(
-                                    description: product.description
-                                )
-
-                                ProductActionsView(
-                                    product: product,
-                                    viewModel: viewModel
-
-                                )
-                            }
-                        }
-                    }
-                    .ignoresSafeArea()
-                    .toolbar {
-                        ToolbarItem(placement: .topBarTrailing) {
-                            Button {
-                                // TODO: share action
-                            } label: {
-                                Image(systemName: "square.and.arrow.up")
-                            }
-                        }
-                    }
-                }
+            case .loaded(let product):
+                content(product: product)
 
             case .empty:
                 Text("No data")
@@ -64,8 +29,54 @@ struct ProductDetailsView: View {
                 Text(error.localizedDescription)
             }
         }
+        .ignoresSafeArea()
         .task {
-            await viewModel.loadProductDetails(id: productId)
+            if case .idle = viewModel.productDetailsState {
+                await viewModel.loadProductDetails(id: productId)
+            }
+        }
+    }
+}
+
+// MARK: - Content
+
+extension ProductDetailsView {
+
+    fileprivate func content(product: ProductModel) -> some View {
+        ScrollView {
+            VStack(spacing: 0) {
+
+                ProductImagesView(images: product.images)
+
+                VStack(alignment: .leading, spacing: 16) {
+
+                    ProductHeaderView(product: product)
+
+                    Divider()
+
+                    ProductPriceView(price: product.price)
+
+                    Divider()
+
+                    ProductDescriptionView(
+                        description: product.description
+                    )
+
+                    ProductActionsView(
+                        product: product,
+                        viewModel: viewModel
+                    )
+                }
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    // TODO: share
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                }
+            }
         }
     }
 }
@@ -159,21 +170,24 @@ private struct ProductActionsView: View {
             Button {
                 Task {
                     if viewModel.favoriteService.isFavorite(product.id) {
-                        try await viewModel.deleteFavorites(id: product.id)
+                        await viewModel.deleteFavorites(id: product.id)
                     } else {
-                        try await viewModel.setAsFavorites(id: product.id)
+                        await viewModel.setAsFavorites(id: product.id)
                     }
                 }
             } label: {
-                Image(systemName: viewModel.favoriteService.isFavorite(product.id) ? "heart.fill" : "heart")
-                    .font(.title3)
-                    .foregroundStyle(
-                        viewModel.favoriteService.isFavorite(product.id)
-                            ? .red : .black
-                    )
-                    .frame(width: 50, height: 50)
-                    .background(Color(.systemGray6))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                Image(
+                    systemName: viewModel.favoriteService.isFavorite(product.id)
+                        ? "heart.fill" : "heart"
+                )
+                .font(.title3)
+                .foregroundStyle(
+                    viewModel.favoriteService.isFavorite(product.id)
+                        ? .red : .black
+                )
+                .frame(width: 50, height: 50)
+                .background(Color(.systemGray6))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
 
             CustomButton(title: "Add To Cart") {

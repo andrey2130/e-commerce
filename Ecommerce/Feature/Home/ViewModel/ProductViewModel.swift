@@ -10,24 +10,27 @@ import SwiftUI
 @MainActor
 final class ProductViewModel {
     var products: [ProductModel] = []
-    var loadingState: ContentLoadingState = .loading
-    var detailsState: DetailsLoadingState = .loading
+    var productsState: Loadable<[ProductModel]> = .idle
+    var productDetailsState: Loadable<ProductModel> = .idle
     var canLoadMore: Bool = true
     var currentPage: Int = 1
     var selectedProduct: ProductModel?
 
     private let productService: ProductService = .shared
     private let localStorage: LocalStorageService = .shared
+    private var pagination = Pagination()
     let favoriteService: FavoritesService = .shared
 
-    private func preloadFavoritesIfNeeded() async {
-        guard let token = localStorage.getToken(), !token.isEmpty else {
-            return
-        }
+    private var token: String? {
+        localStorage.getToken()?.isEmpty == false
+            ? localStorage.getToken()
+            : nil
+    }
 
-        guard favoriteService.favoriteProductIds.isEmpty else {
-            return
-        }
+    private func preloadFavoritesIfNeeded() async {
+        guard let token,
+            favoriteService.favoriteProductIds.isEmpty
+        else { return }
 
         do {
             try await favoriteService.loadFavorites(token: token)
@@ -37,69 +40,60 @@ final class ProductViewModel {
     }
 
     func loadProducts() async {
-        guard canLoadMore else { return }
+        guard pagination.canLoadMore else { return }
+
+        await preloadFavoritesIfNeeded()
 
         do {
-            await preloadFavoritesIfNeeded()
             let response = try await productService.getProduct(
-                page: currentPage
+                page: pagination.page
             )
-            let newItems = response.data
 
-            if newItems.isEmpty {
-                canLoadMore = false
+            let newItems = response.data
+            guard !newItems.isEmpty else {
+                pagination.stop()
+                productsState = products.isEmpty ? .empty : .loaded(products)
                 return
             }
 
             let existingIds = Set(products.map(\.id))
-            let uniqueNewItems = newItems.filter {
-                !existingIds.contains($0.id)
-            }
+            let uniqueItems = newItems.filter { !existingIds.contains($0.id) }
 
-            products.append(contentsOf: uniqueNewItems)
-            currentPage += 1
-            self.loadingState = products.isEmpty ? .empty : .completed
-            print("state: \(self.loadingState)")
+            products.append(contentsOf: uniqueItems)
+            pagination.nextPage()
+
+            productsState = .loaded(products)
         } catch {
-            print("error = \(error.localizedDescription)")
-            self.loadingState = .error(error)
+            productsState = .error(error)
         }
     }
 
     func loadProductDetails(id: Int) async {
-        detailsState = .loading
-
+        productDetailsState = .loading
         await preloadFavoritesIfNeeded()
 
         do {
             let response = try await productService.getProductById(id)
             selectedProduct = response.data
-            detailsState = .completed
+            productDetailsState = .loaded(response.data)
         } catch {
-            detailsState = .error(error)
+            productDetailsState = .error(error)
         }
     }
 
-    func loadMore(currentItem item: ProductModel?) async {
-
-        guard let item = item,
-            canLoadMore,
-            products.count >= 5
+    func loadMoreIfNeeded(currentItem item: ProductModel?) async {
+        guard
+            let item,
+            pagination.canLoadMore,
+            let last = products.last,
+            last.id == item.id
         else { return }
 
-        let thresholdIndex = products.index(products.endIndex, offsetBy: -1)
-        if let index = products.firstIndex(where: { $0.id == item.id }),
-            index >= thresholdIndex
-        {
-            await loadProducts()
-        }
-
+        await loadProducts()
     }
 
-    func setAsFavorites(id: Int) async throws {
-        guard let token = localStorage.getToken(), !token.isEmpty else {
-            return
-        }
+    func setAsFavorites(id: Int) async {
+        guard let token else { return }
 
         do {
             _ = try await favoriteService.addToFavorites(
@@ -113,10 +107,8 @@ final class ProductViewModel {
 
     }
 
-    func deleteFavorites(id: Int) async throws {
-        guard let token = localStorage.getToken(), !token.isEmpty else {
-            return
-        }
+    func deleteFavorites(id: Int) async  {
+        guard let token else { return }
         do {
             _ = try await favoriteService.removeFromFavorites(
                 productId: id,
