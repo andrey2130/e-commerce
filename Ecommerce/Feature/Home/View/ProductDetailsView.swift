@@ -11,8 +11,8 @@ struct ProductDetailsView: View {
 
     let productId: Int
     @State private var viewModel = ProductViewModel()
-    @State private var favoritesViewModel = FavoritesViewModel()
     @State private var showAuthAlert: Bool = false
+    @Environment(FavoritesViewModel.self) private var favoritesViewModel
     @Environment(AuthViewModel.self) private var auth
     @Environment(Coordinator.self) private var coordinator
 
@@ -98,7 +98,7 @@ extension ProductDetailsView {
     }
 
     private func handleFavoriteTap(_ product: ProductModel) {
-        guard auth.state == .unauthorized else {
+        if auth.state == .unauthorized {
             showAuthAlert = true
             return
         }
