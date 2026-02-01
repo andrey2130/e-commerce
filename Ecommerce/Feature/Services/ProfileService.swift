@@ -14,12 +14,12 @@ struct UserInfoResponse: Decodable {
 
 class ProfileService {
     static let shared = ProfileService()
-    private let api = ApiClient(baseURL: URL(string: AppiConts.baseUrl)!)
+    private let api = ApiClient(baseURL: URL(string: ApiConst.baseUrl)!)
 
     private init() {}
 
     func getUserData(token: String) async throws -> UserModel {
-        var endpoint = Endpoint.get(AppiConts.getUserInfo)
+        var endpoint = Endpoint.get(ApiConst.getUserInfo)
         endpoint.headers["Authorization"] = "Bearer \(token)"
 
         let response: UserInfoResponse = try await api.send(endpoint)

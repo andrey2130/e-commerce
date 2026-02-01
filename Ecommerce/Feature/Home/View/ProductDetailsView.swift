@@ -8,48 +8,23 @@
 import SwiftUI
 
 struct ProductDetailsView: View {
+
     let productId: Int
-    @State var viewModel = ProductViewModel()
+    @State private var viewModel = ProductViewModel()
+    @State private var favoritesViewModel = FavoritesViewModel()
+    @State private var showAuthAlert: Bool = false
+    @Environment(AuthViewModel.self) private var auth
+    @Environment(Coordinator.self) private var coordinator
 
     var body: some View {
         VStack {
-            switch viewModel.detailsState {
-            case .loading:
+            switch viewModel.productDetailsState {
+
+            case .idle, .loading:
                 ProgressView()
 
-            case .completed:
-                if let product = viewModel.selectedProduct {
-                    ScrollView {
-                        VStack(spacing: 0) {
-
-                            ProductImagesView(images: product.images)
-
-                            VStack(alignment: .leading, spacing: 16) {
-                                ProductHeaderView(product: product)
-
-                                Divider()
-
-                                ProductPriceView(price: product.price)
-
-                                Divider()
-
-                                ProductDescriptionView(description: product.description)
-
-                                ProductActionsView()
-                            }
-                        }
-                    }
-                    .ignoresSafeArea()
-                    .toolbar {
-                        ToolbarItem(placement: .topBarTrailing) {
-                            Button {
-                                // TODO: share action
-                            } label: {
-                                Image(systemName: "square.and.arrow.up")
-                            }
-                        }
-                    }
-                }
+            case .loaded(let product):
+                content(product: product)
 
             case .empty:
                 Text("No data")
@@ -58,12 +33,85 @@ struct ProductDetailsView: View {
                 Text(error.localizedDescription)
             }
         }
+        .alert("Login required", isPresented: $showAuthAlert) {
+            Button("Loggin") {
+                coordinator.push(.login)
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("You need to be logged in to add products to favorites.")
+        }
+        .ignoresSafeArea()
         .task {
-            await viewModel.loadProductDetails(id: productId)
+            if case .idle = viewModel.productDetailsState {
+                await viewModel.loadProductDetails(id: productId)
+            }
         }
     }
 }
 
+// MARK: - Content
+
+extension ProductDetailsView {
+
+    fileprivate func content(product: ProductModel) -> some View {
+        ScrollView {
+            VStack(spacing: 0) {
+
+                ProductImagesView(images: product.images)
+
+                VStack(alignment: .leading, spacing: 16) {
+
+                    ProductHeaderView(product: product)
+
+                    Divider()
+
+                    ProductPriceView(price: product.price)
+
+                    Divider()
+
+                    ProductDescriptionView(
+                        description: product.description
+                    )
+
+                    ProductActionsView(
+                        product: product,
+                        isFavorite: favoritesViewModel.favoriteService
+                            .isFavorite(product.id),
+                        onFavoriteTap: {
+                            handleFavoriteTap(product)
+
+                        }
+                    )
+                }
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    // TODO: share
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                }
+            }
+        }
+    }
+
+    private func handleFavoriteTap(_ product: ProductModel) {
+        guard auth.state == .unauthorized else {
+            showAuthAlert = true
+            return
+        }
+
+        Task {
+            if favoritesViewModel.favoriteService.isFavorite(product.id) {
+                await favoritesViewModel.deleteFavorites(id: product.id)
+            } else {
+                await favoritesViewModel.setAsFavorites(id: product.id)
+            }
+        }
+    }
+}
 
 // MARK: - Subviews
 
@@ -116,7 +164,7 @@ private struct ProductHeaderView: View {
         .padding(.horizontal)
         .padding(.vertical)
     }
-    
+
 }
 
 private struct ProductPriceView: View {
@@ -127,7 +175,7 @@ private struct ProductPriceView: View {
             .font(AppFont.title)
             .padding(.horizontal)
     }
-    
+
 }
 
 private struct ProductDescriptionView: View {
@@ -147,29 +195,30 @@ private struct ProductDescriptionView: View {
 }
 
 private struct ProductActionsView: View {
+    let product: ProductModel
+    let isFavorite: Bool
+    let onFavoriteTap: () -> Void
+
     var body: some View {
         HStack(spacing: 12) {
             Button {
-                // TODO: favorite action
+                onFavoriteTap()
             } label: {
-                Image(systemName: "heart")
+                Image(systemName: isFavorite ? "heart.fill" : "heart")
                     .font(.title3)
-                    .foregroundStyle(.black)
+                    .foregroundStyle(isFavorite ? .red : .black)
                     .frame(width: 50, height: 50)
                     .background(Color(.systemGray6))
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             }
 
             CustomButton(title: "Add To Cart") {
-                //TODO: add to cart
+                // TODO
             }
         }
         .padding(.horizontal)
     }
 }
-
-
-
 
 #Preview {
     ProductDetailsView(productId: 9)

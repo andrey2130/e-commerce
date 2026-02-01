@@ -16,9 +16,7 @@ class AuthViewModel {
     var confirmPassword: String = ""
     var isLoading: Bool = false
     var validationError: AuthValidationError?
-    var isRegistered: Bool = false
-    var isLoginned: Bool = false
-
+    var state: AuthState = .loading
     private let localStorageService: LocalStorageService = .shared
 
     private let authService = AuthService.shared
@@ -45,9 +43,9 @@ class AuthViewModel {
 
             if let token = response.token {
                 localStorageService.saveToken(token)
+                state = .authorized
             }
 
-            isRegistered = true
         } catch let error as AuthValidationError {
             validationError = error
         } catch {
@@ -68,8 +66,9 @@ class AuthViewModel {
             )
             if let token = responce.token {
                 localStorageService.saveToken(token)
+                state = .authorized
             }
-            isLoginned = true
+
         } catch let error as AuthValidationError {
             validationError = error
         } catch {
@@ -79,5 +78,6 @@ class AuthViewModel {
 
     func logout() {
         localStorageService.loguserOut()
+        state = .unauthorized
     }
 }

@@ -8,14 +8,14 @@
 import Foundation
 import SwiftUI
 
-struct ProductDetailsReques: Decodable {
+struct ProductDetailsRequest: Decodable {
     let success: Bool
     let data: ProductModel
 }
 
 final class ProductService {
     static let shared = ProductService()
-    private let api = ApiClient(baseURL: URL(string: AppiConts.baseUrl)!)
+    private let api = ApiClient(baseURL: URL(string: ApiConst.baseUrl)!)
 
     private init() {}
 
@@ -25,16 +25,15 @@ final class ProductService {
             URLQueryItem(name: "page", value: "\(page)"),
             URLQueryItem(name: "limit", value: "\(limit)"),
         ]
-        let endpoint = Endpoint.get("\(AppiConts.getProductUrl)", query: query)
-     
+        let endpoint = Endpoint.get("\(ApiConst.getProductUrl)", query: query)
         print("Endpoint body \(endpoint.query)")
         return try await api.send(endpoint)
     }
 
-    func getProductById(_ id: Int) async throws -> ProductDetailsReques {
-        let endpoint = Endpoint.get("\(AppiConts.getProductById)/\(id)")
+    func getProductById(_ id: Int) async throws -> ProductDetailsRequest {
+        let endpoint = Endpoint.get("\(ApiConst.getProductById)/\(id)")
         print("\(endpoint)")
-        
         return try await api.send(endpoint)
     }
+
 }

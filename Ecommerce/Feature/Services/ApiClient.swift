@@ -28,10 +28,12 @@ struct Endpoint {
     static func post<T: Encodable>(_ path: String, body: T) throws -> Endpoint {
         var e = Endpoint(path: path, method: .post)
         e.body = try JSONEncoder().encode(body)
-        print("erros is \(e)")
         e.headers["Content-Type"] = "application/json"
-        print("erros is \(e.body?.count ?? 0)")
         return e
+    }
+
+    static func delete(_ path: String) -> Endpoint {
+        Endpoint(path: path, method: .delete)
     }
 }
 
@@ -65,6 +67,7 @@ final class ApiClient {
         request.httpMethod = endpoit.method.rawValue
 
         endpoit.headers.forEach { request.setValue($1, forHTTPHeaderField: $0) }
+
         if endpoit.body != nil {
             request.httpBody = endpoit.body
             if request.value(forHTTPHeaderField: "Content-Type") == nil {

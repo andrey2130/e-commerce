@@ -9,8 +9,8 @@ import SwiftUI
 
 struct ProfileView: View {
     @Environment(Coordinator.self) private var coordinator
+    @Environment(AuthViewModel.self) private var auth
     @State private var viewModel = ProfileViewModel()
-    @State private var authViewModel = AuthViewModel()
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -53,12 +53,11 @@ struct ProfileView: View {
                     Text(viewModel.user?.name ?? "Sign in")
                         .font(AppFont.title)
                         .foregroundColor(.primary)
-                        
 
                     Text(viewModel.user?.email ?? "")
                         .font(AppFont.body)
                         .foregroundColor(.secondary)
-                        
+
                 }
 
                 Spacer()
@@ -168,8 +167,9 @@ struct ProfileView: View {
             }
 
             CustomButton(title: "Log out") {
-                authViewModel.logout()
-                coordinator.push(.login)
+                auth.logout()
+                viewModel.setUnAuthorized()
+
             }
         }
         .padding(.top, 6)

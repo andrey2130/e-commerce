@@ -6,30 +6,10 @@
 //
 
 
-enum ContentLoadingState {
+enum Loadable<T> {
+    case idle
     case loading
-    case completed
+    case loaded(T)
     case empty
     case error(Error)
-}
-
-
-enum DetailsLoadingState: Equatable {
-    case loading
-    case completed
-    case empty
-    case error(Error)
-
-    static func == (lhs: DetailsLoadingState, rhs: DetailsLoadingState) -> Bool {
-        switch (lhs, rhs) {
-        case (.loading, .loading),
-             (.completed, .completed),
-             (.empty, .empty):
-            return true
-        case (.error, .error):
-            return true // ignoring error value
-        default:
-            return false
-        }
-    }
 }

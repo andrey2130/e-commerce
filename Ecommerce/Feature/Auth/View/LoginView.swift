@@ -9,7 +9,7 @@ import SwiftUI
 
 struct LoginView: View {
     @Environment(Coordinator.self) private var coordinator
-    @State private var viewModel = AuthViewModel()
+    @Environment(AuthViewModel.self) private var viewModel
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -29,7 +29,7 @@ struct LoginView: View {
             .padding(.top, 16)
         }
         .navigationBarBackButtonHidden(true)
-        .onChange(of: viewModel.isLoginned) { _, logged in
+        .onChange(of: viewModel.state == .authorized) { _, logged in
             if logged {
                 coordinator.push(.home)
             }

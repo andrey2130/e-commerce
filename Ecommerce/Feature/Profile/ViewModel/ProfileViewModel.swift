@@ -36,4 +36,8 @@ final class ProfileViewModel {
             authState = .unauthorized
         }
     }
+    func setUnAuthorized() {
+        user = nil
+        authState = .unauthorized
+    }
 }

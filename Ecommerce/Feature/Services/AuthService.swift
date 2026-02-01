@@ -27,20 +27,20 @@ struct AuthResponse: Codable {
 
 final class AuthService {
     static let shared = AuthService()
-    private let api = ApiClient(baseURL: URL(string: AppiConts.baseUrl)!)
+    private let api = ApiClient(baseURL: URL(string: ApiConst.baseUrl)!)
     private init() {}
 
     func register(name: String, email: String, password: String) async throws
         -> AuthResponse
     {
         let body = RegisterRequest(name: name, email: email, password: password)
-        let endpoint = try Endpoint.post(AppiConts.registerUrl, body: body)
+        let endpoint = try Endpoint.post(ApiConst.registerUrl, body: body)
         return try await api.send(endpoint)
     }
 
     func login(email: String, password: String) async throws -> AuthResponse {
         let body = LoginRequest(email: email, password: password)
-        let endpoint = try Endpoint.post(AppiConts.loginUrl, body: body)
+        let endpoint = try Endpoint.post(ApiConst.loginUrl, body: body)
         return try await api.send(endpoint)
     }
 

@@ -9,80 +9,146 @@ import SwiftUI
 
 struct HomeView: View {
     @State private var viewModel = ProductViewModel()
+    @State private var showAuthAlert: Bool = false
     @Environment(Coordinator.self) private var coordinator
-
-    let columns = [
+    @Environment(AuthViewModel.self) private var auth
+    @Environment(FavoritesViewModel.self) private var favoriteViewModel
+    private let columns = [
         GridItem(.flexible(), spacing: 16),
         GridItem(.flexible(), spacing: 16),
     ]
 
     var body: some View {
         VStack {
-            switch viewModel.loadingState {
-            case .loading:
-                ProgressView()
-            case .completed:
-                content
-            case .empty:
-                Text("No data loadded")
-            case .error:
-                ErrorState {
-                    Task {
-                        await viewModel.loadProducts()
-                    }
-                }
-            }
+            switch viewModel.productsState {
 
+            case .idle, .loading:
+                ProgressView()
+
+            case .loaded(let products):
+                content(products: products)
+
+            case .empty:
+                emptyState
+
+            case .error:
+                errorState
+            }
         }
+        .alert("Login required", isPresented: $showAuthAlert) {
+            Button("Login") {
+                coordinator.push(.login)
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("You need to be logged in to add products to favorites.")
+        }
+
         .navigationBarBackButtonHidden(true)
         .task {
-            if viewModel.products.isEmpty {
+            if case .idle = viewModel.productsState {
                 await viewModel.loadProducts()
             }
         }
-
     }
+}
 
-    private var content: some View {
+// MARK: - Content
+
+extension HomeView {
+
+    fileprivate func content(products: [ProductModel]) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 header
-                grid
+                grid(products: products)
+
+                if viewModel.pagination.isLoadingMore {
+                    HStack {
+                        Spacer()
+                        ProgressView()
+                            .padding(.vertical, 20)
+                        Spacer()
+                    }
+                }
             }
-
             .padding(.horizontal, 16)
-
         }
     }
 
-    private var header: some View {
+    fileprivate var header: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Discover")
                 .font(AppFont.largeTitle)
-            Text("Find your prefect items ")
+
+            Text("Find your prefect items")
                 .font(AppFont.subTitle)
                 .foregroundStyle(.gray)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var grid: some View {
+    fileprivate func grid(products: [ProductModel]) -> some View {
         LazyVGrid(columns: columns, spacing: 16) {
-            ForEach(viewModel.products) { product in
-                ProductCard(product: product) {
+            ForEach(products) { product in
+                ProductCard(
+                    product: product,
+                    onFavoriteToggle: {
+                        if auth.state == .unauthorized {
+                            showAuthAlert = true
+                            return
+                        }
+                        Task {
+                            if viewModel.favoriteService.isFavorite(product.id)
+                            {
+                                await favoriteViewModel.deleteFavorites(
+                                    id: product.id
+                                )
+                            } else {
+                                await favoriteViewModel.setAsFavorites(
+                                    id: product.id
+                                )
+                            }
+                        }
+                    },
+                    isFavorite: viewModel.favoriteService.isFavorite(product.id)
+                ) {
                     coordinator.push(.productDetails(id: product.id))
                 }
                 .task {
-                    await viewModel.loadMore(currentItem: product)
+                    await viewModel.loadMoreIfNeeded(currentItem: product)
                 }
             }
             .padding(.top, 16)
-
         }
+    }
+}
 
+// MARK: - States
+
+extension HomeView {
+
+    fileprivate var emptyState: some View {
+        VStack(spacing: 12) {
+            Text("No data loaded")
+                .font(AppFont.subTitle)
+
+            Button("Reload") {
+                Task { await viewModel.loadProducts() }
+            }
+        }
     }
 
+    fileprivate var errorState: some View {
+        ErrorState {
+            Task {
+                await viewModel.loadProducts()
+            }
+        }
+    }
 }
+
+// MARK: - Preview
 
 #Preview {
     HomeView()
