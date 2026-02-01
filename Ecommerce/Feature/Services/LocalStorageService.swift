@@ -11,7 +11,7 @@ final class LocalStorageService {
     static let shared = LocalStorageService()
     private let tokenKey = "token"
     private let onboardingKey = "onboarding"
-    private init() {}
+     private init() {}
 
     var isLoggedIn: Bool {
         UserDefaults.standard.string(forKey: tokenKey) != nil

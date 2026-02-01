@@ -7,14 +7,32 @@
 
 import SwiftUI
 
+enum FavoritesState: Equatable {
+    case loading
+    case loaded([FavoriteListItem])
+    case empty
+    case error
+
+    static func == (lhs: FavoritesState, rhs: FavoritesState) -> Bool {
+        switch (lhs, rhs) {
+        case (.loading, .loading),
+            (.loaded, .loaded),
+            (.empty, .empty),
+            (.error, .error):
+            return true
+        default:
+            return false
+        }
+    }
+}
+
 @Observable
 @MainActor
 class FavoritesViewModel {
     private let localStorage: LocalStorageService = .shared
     let favoriteService: FavoritesService = .shared
     var favoritesProducts: [FavoriteListItem] = []
-    var isLoading = false
-    var error: Error?
+    var favoriteState: FavoritesState = .loading
 
     private var token: String? {
         localStorage.getToken()?.isEmpty == false
@@ -38,8 +56,10 @@ class FavoritesViewModel {
                 addedAt: response.data.createdAt
             )
             favoritesProducts.append(newItem)
+            favoriteState =
+                favoritesProducts.isEmpty ? .empty : .loaded(favoritesProducts)
         } catch {
-            self.error = error
+            favoriteState = .error
             print(error.localizedDescription)
         }
     }
@@ -54,8 +74,9 @@ class FavoritesViewModel {
             )
 
             favoritesProducts.removeAll { $0.productId == id }
+            favoriteState = .empty
         } catch {
-            self.error = error
+            favoriteState = .error
             print("error deleting favorites \(error.localizedDescription)")
         }
     }
@@ -65,18 +86,16 @@ class FavoritesViewModel {
             return
         }
 
-        isLoading = true
-        error = nil
-
         do {
             favoritesProducts = try await favoriteService.loadFavorites(
                 token: token
             )
+            favoriteState =
+                favoritesProducts.isEmpty ? .empty : .loaded(favoritesProducts)
         } catch {
-            self.error = error
+            favoriteState = .error
             print("error loading favorites \(error.localizedDescription)")
         }
 
-        isLoading = false
     }
 }

@@ -14,19 +14,18 @@ struct FavoritesView: View {
 
     var body: some View {
         Group {
-            switch (viewModel.isLoading, viewModel.favoritesProducts.isEmpty) {
-            case (true, _):
-                loadingState
 
-            case (false, true):
+            switch viewModel.favoriteState {
+            case .empty:
                 emptyState
-
-            case (false, false):
+            case .loading:
+                loadingState
+            case .loaded:
                 content
+            case .error:
+                ErrorState {}
             }
         }
-        .navigationTitle("Favorites")
-        .navigationBarTitleDisplayMode(.large)
         .task {
             await viewModel.loadFavorites()
         }
