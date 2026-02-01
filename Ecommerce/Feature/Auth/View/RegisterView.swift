@@ -25,7 +25,7 @@ struct RegisterView: View {
                 })
                 .padding(.bottom, 24)
             }
-            .onChange(of: viewModel.isRegistered) { _, registered in
+            .onChange(of: viewModel.state == .authorized) { _, registered in
                 if registered {
                     coordinator.push(.home)
                 }

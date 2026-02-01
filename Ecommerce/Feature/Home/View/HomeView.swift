@@ -8,13 +8,15 @@
 import SwiftUI
 
 struct HomeView: View {
-
     @State private var viewModel = ProductViewModel()
+    @State private var favoriteViewModel = FavoritesViewModel()
+    @State private var showAuthAlert: Bool = false
     @Environment(Coordinator.self) private var coordinator
+    @Environment(AuthViewModel.self) private var auth
 
     private let columns = [
         GridItem(.flexible(), spacing: 16),
-        GridItem(.flexible(), spacing: 16)
+        GridItem(.flexible(), spacing: 16),
     ]
 
     var body: some View {
@@ -34,6 +36,15 @@ struct HomeView: View {
                 errorState
             }
         }
+        .alert("Login required", isPresented: $showAuthAlert) {
+            Button("Loggin") {
+                coordinator.push(.login)
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("You need to be logged in to add products to favorites.")
+        }
+
         .navigationBarBackButtonHidden(true)
         .task {
             if case .idle = viewModel.productsState {
@@ -45,19 +56,28 @@ struct HomeView: View {
 
 // MARK: - Content
 
-private extension HomeView {
+extension HomeView {
 
-    func content(products: [ProductModel]) -> some View {
+    fileprivate func content(products: [ProductModel]) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 header
                 grid(products: products)
+
+                if viewModel.pagination.isLoadingMore {
+                    HStack {
+                        Spacer()
+                        ProgressView()
+                            .padding(.vertical, 20)
+                        Spacer()
+                    }
+                }
             }
             .padding(.horizontal, 16)
         }
     }
 
-    var header: some View {
+    fileprivate var header: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Discover")
                 .font(AppFont.largeTitle)
@@ -69,17 +89,26 @@ private extension HomeView {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    func grid(products: [ProductModel]) -> some View {
+    fileprivate func grid(products: [ProductModel]) -> some View {
         LazyVGrid(columns: columns, spacing: 16) {
             ForEach(products) { product in
                 ProductCard(
                     product: product,
                     onFavoriteToggle: {
+                        guard auth.state == .unauthorized else {
+                            showAuthAlert = true
+                            return
+                        }
                         Task {
-                            if viewModel.favoriteService.isFavorite(product.id) {
-                                try await viewModel.deleteFavorites(id: product.id)
+                            if viewModel.favoriteService.isFavorite(product.id)
+                            {
+                                await favoriteViewModel.deleteFavorites(
+                                    id: product.id
+                                )
                             } else {
-                                await viewModel.setAsFavorites(id: product.id)
+                                await favoriteViewModel.setAsFavorites(
+                                    id: product.id
+                                )
                             }
                         }
                     },
@@ -98,9 +127,9 @@ private extension HomeView {
 
 // MARK: - States
 
-private extension HomeView {
+extension HomeView {
 
-    var emptyState: some View {
+    fileprivate var emptyState: some View {
         VStack(spacing: 12) {
             Text("No data loaded")
                 .font(AppFont.subTitle)
@@ -111,7 +140,7 @@ private extension HomeView {
         }
     }
 
-    var errorState: some View {
+    fileprivate var errorState: some View {
         ErrorState {
             Task {
                 await viewModel.loadProducts()

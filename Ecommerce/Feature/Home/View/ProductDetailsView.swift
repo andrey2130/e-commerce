@@ -11,6 +11,10 @@ struct ProductDetailsView: View {
 
     let productId: Int
     @State private var viewModel = ProductViewModel()
+    @State private var favoritesViewModel = FavoritesViewModel()
+    @State private var showAuthAlert: Bool = false
+    @Environment(AuthViewModel.self) private var auth
+    @Environment(Coordinator.self) private var coordinator
 
     var body: some View {
         VStack {
@@ -28,6 +32,14 @@ struct ProductDetailsView: View {
             case .error(let error):
                 Text(error.localizedDescription)
             }
+        }
+        .alert("Login required", isPresented: $showAuthAlert) {
+            Button("Loggin") {
+                coordinator.push(.login)
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("You need to be logged in to add products to favorites.")
         }
         .ignoresSafeArea()
         .task {
@@ -64,7 +76,12 @@ extension ProductDetailsView {
 
                     ProductActionsView(
                         product: product,
-                        viewModel: viewModel
+                        isFavorite: favoritesViewModel.favoriteService
+                            .isFavorite(product.id),
+                        onFavoriteTap: {
+                            handleFavoriteTap(product)
+
+                        }
                     )
                 }
             }
@@ -76,6 +93,21 @@ extension ProductDetailsView {
                 } label: {
                     Image(systemName: "square.and.arrow.up")
                 }
+            }
+        }
+    }
+
+    private func handleFavoriteTap(_ product: ProductModel) {
+        guard auth.state == .unauthorized else {
+            showAuthAlert = true
+            return
+        }
+
+        Task {
+            if favoritesViewModel.favoriteService.isFavorite(product.id) {
+                await favoritesViewModel.deleteFavorites(id: product.id)
+            } else {
+                await favoritesViewModel.setAsFavorites(id: product.id)
             }
         }
     }
@@ -163,35 +195,25 @@ private struct ProductDescriptionView: View {
 }
 
 private struct ProductActionsView: View {
-    var product: ProductModel
-    @Bindable var viewModel: ProductViewModel
+    let product: ProductModel
+    let isFavorite: Bool
+    let onFavoriteTap: () -> Void
+
     var body: some View {
         HStack(spacing: 12) {
             Button {
-                Task {
-                    if viewModel.favoriteService.isFavorite(product.id) {
-                        await viewModel.deleteFavorites(id: product.id)
-                    } else {
-                        await viewModel.setAsFavorites(id: product.id)
-                    }
-                }
+                onFavoriteTap()
             } label: {
-                Image(
-                    systemName: viewModel.favoriteService.isFavorite(product.id)
-                        ? "heart.fill" : "heart"
-                )
-                .font(.title3)
-                .foregroundStyle(
-                    viewModel.favoriteService.isFavorite(product.id)
-                        ? .red : .black
-                )
-                .frame(width: 50, height: 50)
-                .background(Color(.systemGray6))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                Image(systemName: isFavorite ? "heart.fill" : "heart")
+                    .font(.title3)
+                    .foregroundStyle(isFavorite ? .red : .black)
+                    .frame(width: 50, height: 50)
+                    .background(Color(.systemGray6))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
             }
 
             CustomButton(title: "Add To Cart") {
-                //TODO: add to cart
+                // TODO
             }
         }
         .padding(.horizontal)

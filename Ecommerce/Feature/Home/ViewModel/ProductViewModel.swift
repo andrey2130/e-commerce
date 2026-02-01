@@ -18,7 +18,7 @@ final class ProductViewModel {
 
     private let productService: ProductService = .shared
     private let localStorage: LocalStorageService = .shared
-    private var pagination = Pagination()
+    var pagination = Pagination()
     let favoriteService: FavoritesService = .shared
 
     private var token: String? {
@@ -53,6 +53,7 @@ final class ProductViewModel {
             guard !newItems.isEmpty else {
                 pagination.stop()
                 productsState = products.isEmpty ? .empty : .loaded(products)
+                pagination.isLoadingMore = false
                 return
             }
 
@@ -66,6 +67,8 @@ final class ProductViewModel {
         } catch {
             productsState = .error(error)
         }
+
+        pagination.isLoadingMore = false
     }
 
     func loadProductDetails(id: Int) async {
@@ -82,51 +85,17 @@ final class ProductViewModel {
     }
 
     func loadMoreIfNeeded(currentItem item: ProductModel?) async {
+
         guard
             let item,
             pagination.canLoadMore,
             let last = products.last,
+            !pagination.isLoadingMore,
             last.id == item.id
         else { return }
+        pagination.isLoadingMore = true
 
         await loadProducts()
     }
 
-    func setAsFavorites(id: Int) async {
-        guard let token else { return }
-
-        do {
-            _ = try await favoriteService.addToFavorites(
-                productId: id,
-                token: token
-            )
-
-        } catch {
-            print(error.localizedDescription)
-        }
-
-    }
-
-    func deleteFavorites(id: Int) async  {
-        guard let token else { return }
-        do {
-            _ = try await favoriteService.removeFromFavorites(
-                productId: id,
-                token: token
-            )
-        } catch {
-            print("error deleting favorites \(error.localizedDescription)")
-        }
-    }
-
-    func loadFavorites() async throws {
-        guard let token = localStorage.getToken(), !token.isEmpty else {
-            return
-        }
-        do {
-            _ = try await favoriteService.loadFavorites(token: token)
-        } catch {
-            print("error loading favorites \(error.localizedDescription)")
-        }
-    }
 }

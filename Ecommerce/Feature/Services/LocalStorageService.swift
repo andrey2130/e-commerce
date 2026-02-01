@@ -30,6 +30,7 @@ final class LocalStorageService {
 
     func loguserOut() {
         UserDefaults.standard.removeObject(forKey: tokenKey)
+        FavoritesService.shared.clearFavorites()
     }
 
     func markOnboardingAsComnpeted() {

@@ -121,4 +121,8 @@ final class FavoritesService {
         let _: FavoritesMessageResponse = try await api.send(endpoint)
         favoriteProductIds.remove(productId)
     }
+
+    func clearFavorites() {
+        favoriteProductIds.removeAll()
+    }
 }

@@ -29,7 +29,7 @@ struct LoginView: View {
             .padding(.top, 16)
         }
         .navigationBarBackButtonHidden(true)
-        .onChange(of: viewModel.isLoginned) { _, logged in
+        .onChange(of: viewModel.state == .authorized) { _, logged in
             if logged {
                 coordinator.push(.home)
             }

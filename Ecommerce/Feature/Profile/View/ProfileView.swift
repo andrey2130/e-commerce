@@ -53,12 +53,11 @@ struct ProfileView: View {
                     Text(viewModel.user?.name ?? "Sign in")
                         .font(AppFont.title)
                         .foregroundColor(.primary)
-                        
 
                     Text(viewModel.user?.email ?? "")
                         .font(AppFont.body)
                         .foregroundColor(.secondary)
-                        
+
                 }
 
                 Spacer()
@@ -169,7 +168,8 @@ struct ProfileView: View {
 
             CustomButton(title: "Log out") {
                 authViewModel.logout()
-                coordinator.push(.login)
+                viewModel.setUnAuthorized()
+
             }
         }
         .padding(.top, 6)
