@@ -9,11 +9,10 @@ import SwiftUI
 
 struct HomeView: View {
     @State private var viewModel = ProductViewModel()
-    @State private var favoriteViewModel = FavoritesViewModel()
     @State private var showAuthAlert: Bool = false
     @Environment(Coordinator.self) private var coordinator
     @Environment(AuthViewModel.self) private var auth
-
+    @Environment(FavoritesViewModel.self) private var favoriteViewModel
     private let columns = [
         GridItem(.flexible(), spacing: 16),
         GridItem(.flexible(), spacing: 16),
@@ -37,7 +36,7 @@ struct HomeView: View {
             }
         }
         .alert("Login required", isPresented: $showAuthAlert) {
-            Button("Loggin") {
+            Button("Login") {
                 coordinator.push(.login)
             }
             Button("Cancel", role: .cancel) {}
@@ -95,7 +94,7 @@ extension HomeView {
                 ProductCard(
                     product: product,
                     onFavoriteToggle: {
-                        guard auth.state == .unauthorized else {
+                        if auth.state == .unauthorized {
                             showAuthAlert = true
                             return
                         }

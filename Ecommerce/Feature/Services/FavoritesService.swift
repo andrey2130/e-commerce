@@ -18,7 +18,7 @@ struct FavoritesListResponse: Decodable {
     let data: [FavoriteListItem]
 }
 
-struct FavoriteListItem: Decodable {
+struct FavoriteListItem: Identifiable, Decodable {
     let id: Int
     let productId: Int
     let product: FavoriteProduct
@@ -71,14 +71,8 @@ final class FavoritesService {
 
     private init() {}
 
-    func loadFavorites(token: String) async throws {
-        var endpoint = Endpoint.get(ApiConst.favorites)
-        endpoint.headers["Authorization"] = "Bearer \(token)"
-        let response: FavoritesListResponse = try await api.send(endpoint)
-        favoriteProductIds = Set(response.data.map(\.productId))
-    }
-
-    func getFavorites(token: String) async throws -> [FavoriteListItem] {
+    @discardableResult
+    func loadFavorites(token: String) async throws -> [FavoriteListItem] {
         var endpoint = Endpoint.get(ApiConst.favorites)
         endpoint.headers["Authorization"] = "Bearer \(token)"
         let response: FavoritesListResponse = try await api.send(endpoint)

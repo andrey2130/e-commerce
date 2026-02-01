@@ -9,8 +9,8 @@ import SwiftUI
 
 struct ProfileView: View {
     @Environment(Coordinator.self) private var coordinator
+    @Environment(AuthViewModel.self) private var auth
     @State private var viewModel = ProfileViewModel()
-    @State private var authViewModel = AuthViewModel()
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -167,7 +167,7 @@ struct ProfileView: View {
             }
 
             CustomButton(title: "Log out") {
-                authViewModel.logout()
+                auth.logout()
                 viewModel.setUnAuthorized()
 
             }

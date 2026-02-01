@@ -33,7 +33,8 @@ final class ProductViewModel {
         else { return }
 
         do {
-            try await favoriteService.loadFavorites(token: token)
+            
+            _ = try await favoriteService.loadFavorites(token: token)
         } catch {
             print("Favorites preload error:", error.localizedDescription)
         }

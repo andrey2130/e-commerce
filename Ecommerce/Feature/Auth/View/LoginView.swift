@@ -9,7 +9,7 @@ import SwiftUI
 
 struct LoginView: View {
     @Environment(Coordinator.self) private var coordinator
-    @State private var viewModel = AuthViewModel()
+    @Environment(AuthViewModel.self) private var viewModel
 
     var body: some View {
         ScrollView(showsIndicators: false) {

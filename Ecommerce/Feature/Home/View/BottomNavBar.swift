@@ -10,7 +10,7 @@ import SwiftUI
 struct BottomNavBar: View {
 
     enum Tab {
-        case home, profile
+        case home, favorites, profile
     }
 
     @State private var selectedTab: Tab = .home
@@ -21,6 +21,11 @@ struct BottomNavBar: View {
                     Label("Home", systemImage: "house")
                 }
                 .tag(Tab.home)
+            FavoritesView()
+                .tabItem {
+                    Label("Favorites", systemImage: "heart")
+                }
+                .tag(Tab.favorites)
             ProfileView()
                 .tabItem {
                     Label("Profile", systemImage: "person")
