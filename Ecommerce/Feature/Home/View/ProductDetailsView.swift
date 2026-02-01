@@ -48,6 +48,10 @@ struct ProductDetailsView: View {
             }
         }
     }
+
+    private func createProductDeepLink(productId: Int) -> URL {
+        URL(string: "ecommerce://product/\(productId)")!
+    }
 }
 
 // MARK: - Content
@@ -88,10 +92,13 @@ extension ProductDetailsView {
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    // TODO: share
-                } label: {
-                    Image(systemName: "square.and.arrow.up")
+                if let product = viewModel.selectedProduct {
+                    ShareLink(
+                        item: createProductDeepLink(productId: product.id),
+                        subject: Text(product.name),
+                    ) {
+                        Image(systemName: "square.and.arrow.up")
+                    }
                 }
             }
         }

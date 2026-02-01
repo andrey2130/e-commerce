@@ -13,6 +13,5 @@ struct EcommerceApp: App {
         WindowGroup {
             CoordinatorView()
         }
-
     }
 }
