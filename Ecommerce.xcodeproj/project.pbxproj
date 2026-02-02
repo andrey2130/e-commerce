@@ -6,12 +6,6 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		B54D89A72F30C0AA0082B0BC /* Factory in Frameworks */ = {isa = PBXBuildFile; productRef = B54D89A62F30C0AA0082B0BC /* Factory */; };
-		B54D89A92F30C0AA0082B0BC /* FactoryKit in Frameworks */ = {isa = PBXBuildFile; productRef = B54D89A82F30C0AA0082B0BC /* FactoryKit */; };
-		B54D89AB2F30C0AA0082B0BC /* FactoryTesting in Frameworks */ = {isa = PBXBuildFile; productRef = B54D89AA2F30C0AA0082B0BC /* FactoryTesting */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXFileReference section */
 		B5AB4A3B2F27F9B30017262A /* Ecommerce.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Ecommerce.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -42,9 +36,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B54D89A92F30C0AA0082B0BC /* FactoryKit in Frameworks */,
-				B54D89AB2F30C0AA0082B0BC /* FactoryTesting in Frameworks */,
-				B54D89A72F30C0AA0082B0BC /* Factory in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -87,9 +78,6 @@
 			);
 			name = Ecommerce;
 			packageProductDependencies = (
-				B54D89A62F30C0AA0082B0BC /* Factory */,
-				B54D89A82F30C0AA0082B0BC /* FactoryKit */,
-				B54D89AA2F30C0AA0082B0BC /* FactoryTesting */,
 			);
 			productName = Ecommerce;
 			productReference = B5AB4A3B2F27F9B30017262A /* Ecommerce.app */;
@@ -120,7 +108,6 @@
 			mainGroup = B5AB4A322F27F9B30017262A;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				B54D89A52F30C0AA0082B0BC /* XCRemoteSwiftPackageReference "Factory" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B5AB4A3C2F27F9B30017262A /* Products */;
@@ -362,35 +349,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		B54D89A52F30C0AA0082B0BC /* XCRemoteSwiftPackageReference "Factory" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/hmlongco/Factory";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.5.3;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		B54D89A62F30C0AA0082B0BC /* Factory */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = B54D89A52F30C0AA0082B0BC /* XCRemoteSwiftPackageReference "Factory" */;
-			productName = Factory;
-		};
-		B54D89A82F30C0AA0082B0BC /* FactoryKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = B54D89A52F30C0AA0082B0BC /* XCRemoteSwiftPackageReference "Factory" */;
-			productName = FactoryKit;
-		};
-		B54D89AA2F30C0AA0082B0BC /* FactoryTesting */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = B54D89A52F30C0AA0082B0BC /* XCRemoteSwiftPackageReference "Factory" */;
-			productName = FactoryTesting;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B5AB4A332F27F9B30017262A /* Project object */;
 }
