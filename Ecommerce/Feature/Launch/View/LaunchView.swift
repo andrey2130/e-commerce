@@ -1,5 +1,5 @@
 //
-//  LaunchView 2.swift
+//  LaunchView.swift
 //  Ecommerce
 //
 //  Created by Andrii Duda on 26.01.2026.
@@ -61,6 +61,11 @@ struct LaunchView: View {
                 } else {
                     coordinator.push(.onboarding)
                 }
+
+                NotificationCenter.default.post(
+                    name: .launchComplete,
+                    object: nil
+                )
             }
         }
     }
@@ -76,6 +81,10 @@ struct LaunchView: View {
                 .foregroundColor(.white)
         }
     }
+}
+
+extension Notification.Name {
+    static let launchComplete = Notification.Name("launchComplete")
 }
 
 #Preview {
