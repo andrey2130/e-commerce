@@ -7,11 +7,9 @@
 
 import Foundation
 
-final class LocalStorageService {
-    static let shared = LocalStorageService()
+final class LocalStorageService: LocalStorageProtocol {
     private let tokenKey = "token"
     private let onboardingKey = "onboarding"
-     private init() {}
 
     var isLoggedIn: Bool {
         UserDefaults.standard.string(forKey: tokenKey) != nil
@@ -30,7 +28,6 @@ final class LocalStorageService {
 
     func loguserOut() {
         UserDefaults.standard.removeObject(forKey: tokenKey)
-        FavoritesService.shared.clearFavorites()
     }
 
     func markOnboardingAsComnpeted() {

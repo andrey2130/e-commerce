@@ -6,11 +6,12 @@
 //
 
 import SwiftUI
+import Factory
 
 struct CoordinatorView: View {
-    @State private var coordinator = Coordinator()
-    @State private var auth = AuthViewModel()
-    @State private var favorites = FavoritesViewModel()
+    @State private var coordinator = Container.shared.coordinator()
+    @State private var auth = Container.shared.authViewModel()
+    @State private var favorites = Container.shared.favoritesViewModel()
     @State private var deepLink = DeepLinkManager()
     @State private var isLaunchComplete = false
 

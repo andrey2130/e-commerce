@@ -44,7 +44,6 @@ struct ProductImageView: View {
 
     var body: some View {
         imageContent
-            .frame(maxWidth: .infinity)
             .frame(height: height)
             .clipped()
             .cornerRadius(cornerRadius)
@@ -62,7 +61,8 @@ struct ProductImageView: View {
                 case .success(let image):
                     image
                         .resizable()
-                        .scaledToFill()
+                        .aspectRatio(1, contentMode: .fill)
+                        .clipped()
                         .overlay(alignment: .topTrailing) {
                             FavoriteButton(
                                 isFavorite: isFavorite,

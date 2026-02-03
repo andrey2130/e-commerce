@@ -5,11 +5,14 @@
 //  Created by Andrii Duda on 27.01.2026.
 //
 
+import Factory
 import SwiftUI
 
 @Observable
 final class OnboardingViewModel {
-    private let localStorage: LocalStorageService = .shared
+    @ObservationIgnored @Injected(\.localStorageService) private var localStorage
+
+   
     var currentTab: Int = 0
     var isFinished: Bool = false
 

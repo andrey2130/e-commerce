@@ -25,10 +25,12 @@ struct AuthResponse: Codable {
 
 }
 
-final class AuthService {
-    static let shared = AuthService()
-    private let api = ApiClient(baseURL: URL(string: ApiConst.baseUrl)!)
-    private init() {}
+final class AuthService: AuthServiceProtocol {
+    private let api: ApiClient
+
+    init(api: ApiClient) {
+        self.api = api
+    }
 
     func register(name: String, email: String, password: String) async throws
         -> AuthResponse

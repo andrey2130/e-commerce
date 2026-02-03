@@ -5,11 +5,12 @@
 //  Created by Andrii Duda on 26.01.2026.
 //
 
+import Factory
 import SwiftUI
 
 struct LaunchView: View {
+    @Injected(\.localStorageService) private var localStorageService
     @Environment(Coordinator.self) private var coordinator
-    private let localStorageService: LocalStorageService = .shared
     @State private var scale: CGFloat = 0.92
     @State private var opacity: Double = 0.0
 

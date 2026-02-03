@@ -37,7 +37,7 @@ struct Endpoint {
     }
 }
 
-final class ApiClient {
+final class ApiClient: ApiClientProtocol {
     private let baseURL: URL
     private let session: URLSession
 
