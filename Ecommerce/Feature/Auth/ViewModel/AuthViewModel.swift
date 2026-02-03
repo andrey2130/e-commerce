@@ -5,22 +5,31 @@
 //  Created by Andrii Duda on 27.01.2026.
 //
 
+import Factory
+import Foundation
 import SwiftUI
 
 @MainActor
 @Observable
 class AuthViewModel {
+    @ObservationIgnored @Injected(\.authService) private var authService
+    @ObservationIgnored @Injected(\.localStorageService) private var localStorageService
+    @ObservationIgnored @Injected(\.favoritesService) private var favoriteService
+    
+    
+
     var name: String = ""
     var email: String = ""
     var password: String = ""
     var confirmPassword: String = ""
     var isLoading: Bool = false
     var validationError: AuthValidationError?
-    var state: AuthState = .loading
-    private let localStorageService: LocalStorageService = .shared
+    var state: AuthState = .unauthorized
 
-    private let authService = AuthService.shared
-
+    init() {
+        checkAuthState()
+    }
+    
     func register() async {
         validationError = nil
 
@@ -75,9 +84,18 @@ class AuthViewModel {
             validationError = .invalidEmail
         }
     }
+    
+    func checkAuthState() {
+        if let token = localStorageService.getToken(), !token.isEmpty {
+            state = .authorized
+        } else {
+            state = .unauthorized
+        }
+    }
 
     func logout() {
         localStorageService.loguserOut()
+        favoriteService.clearFavorites()
         state = .unauthorized
     }
 }

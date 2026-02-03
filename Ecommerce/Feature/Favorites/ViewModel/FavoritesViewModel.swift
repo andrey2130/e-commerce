@@ -5,6 +5,7 @@
 //  Created by Andrii Duda on 01.02.2026.
 //
 
+import Factory
 import SwiftUI
 
 enum FavoritesState: Equatable {
@@ -29,15 +30,22 @@ enum FavoritesState: Equatable {
 @Observable
 @MainActor
 class FavoritesViewModel {
-    private let localStorage: LocalStorageService = .shared
-    let favoriteService: FavoritesService = .shared
-    var favoritesProducts: [FavoriteListItem] = []
-    var favoriteState: FavoritesState = .loading
+    @ObservationIgnored @Injected(\.localStorageService) private
+        var localStorageService
+    @ObservationIgnored @Injected(\.favoritesService) private
+        var favoriteService
+
+    private(set) var favoritesProducts: [FavoriteListItem] = []
+    private(set) var favoriteState: FavoritesState = .loading
 
     private var token: String? {
-        localStorage.getToken()?.isEmpty == false
-            ? localStorage.getToken()
+        localStorageService.getToken()?.isEmpty == false
+            ? localStorageService.getToken()
             : nil
+    }
+
+    func isFavorite(_ id: Int) -> Bool {
+        favoriteService.isFavorite(id)
     }
 
     func setAsFavorites(id: Int) async {
@@ -55,9 +63,10 @@ class FavoritesViewModel {
                 product: response.data.product,
                 addedAt: response.data.createdAt
             )
+
             favoritesProducts.append(newItem)
-            favoriteState =
-                favoritesProducts.isEmpty ? .empty : .loaded(favoritesProducts)
+            updateState()
+
         } catch {
             favoriteState = .error
             print(error.localizedDescription)
@@ -74,7 +83,8 @@ class FavoritesViewModel {
             )
 
             favoritesProducts.removeAll { $0.productId == id }
-            favoriteState = .empty
+            updateState()
+
         } catch {
             favoriteState = .error
             print("error deleting favorites \(error.localizedDescription)")
@@ -82,20 +92,32 @@ class FavoritesViewModel {
     }
 
     func loadFavorites() async {
-        guard let token = localStorage.getToken(), !token.isEmpty else {
+        guard let token = localStorageService.getToken(), !token.isEmpty else {
+            favoriteState = .empty
             return
         }
+
+        favoriteState = .loading
 
         do {
             favoritesProducts = try await favoriteService.loadFavorites(
                 token: token
             )
-            favoriteState =
-                favoritesProducts.isEmpty ? .empty : .loaded(favoritesProducts)
+            updateState()
         } catch {
             favoriteState = .error
             print("error loading favorites \(error.localizedDescription)")
         }
+    }
 
+    private func updateState() {
+        favoriteState =
+            favoritesProducts.isEmpty ? .empty : .loaded(favoritesProducts)
+    }
+
+    func clearFavorites() {
+        favoritesProducts.removeAll()
+        favoriteService.clearFavorites()
+        favoriteState = .empty
     }
 }

@@ -13,12 +13,13 @@ struct ProductDetailsRequest: Decodable {
     let data: ProductModel
 }
 
-final class ProductService {
-    static let shared = ProductService()
-    private let api = ApiClient(baseURL: URL(string: ApiConst.baseUrl)!)
+final class ProductService: ProductServiceProtocol {
+    private let api: ApiClient
 
-    private init() {}
-
+    init(api: ApiClient) {
+        self.api = api
+    }
+    
     func getProduct(page: Int, limit: Int = 10) async throws -> ProductListModel
     {
         let query = [

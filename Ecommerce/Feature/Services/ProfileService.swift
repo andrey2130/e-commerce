@@ -12,11 +12,12 @@ struct UserInfoResponse: Decodable {
     let user: UserModel
 }
 
-class ProfileService {
-    static let shared = ProfileService()
-    private let api = ApiClient(baseURL: URL(string: ApiConst.baseUrl)!)
+final class ProfileService: ProfileServiceProtocol {
 
-    private init() {}
+    private let api: ApiClient
+    init(api: ApiClient) {
+        self.api = api
+    }
 
     func getUserData(token: String) async throws -> UserModel {
         var endpoint = Endpoint.get(ApiConst.getUserInfo)

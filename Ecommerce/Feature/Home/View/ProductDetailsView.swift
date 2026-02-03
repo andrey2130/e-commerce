@@ -5,12 +5,14 @@
 //  Created by Andrii Duda on 29.01.2026.
 //
 
+import Factory
 import SwiftUI
 
 struct ProductDetailsView: View {
 
     let productId: Int
-    @State private var viewModel = ProductViewModel()
+    @State private var viewModel = Container.shared.productViewModel()
+
     @State private var showAuthAlert: Bool = false
     @Environment(FavoritesViewModel.self) private var favoritesViewModel
     @Environment(AuthViewModel.self) private var auth
@@ -80,12 +82,13 @@ extension ProductDetailsView {
 
                     ProductActionsView(
                         product: product,
-                        isFavorite: favoritesViewModel.favoriteService
-                            .isFavorite(product.id),
+                        isFavorite: favoritesViewModel.isFavorite(product.id),
+                        
                         onFavoriteTap: {
                             handleFavoriteTap(product)
 
-                        }
+                        },
+                        viewModel: viewModel
                     )
                 }
             }
@@ -111,7 +114,7 @@ extension ProductDetailsView {
         }
 
         Task {
-            if favoritesViewModel.favoriteService.isFavorite(product.id) {
+            if favoritesViewModel.isFavorite(product.id) {
                 await favoritesViewModel.deleteFavorites(id: product.id)
             } else {
                 await favoritesViewModel.setAsFavorites(id: product.id)
@@ -205,6 +208,7 @@ private struct ProductActionsView: View {
     let product: ProductModel
     let isFavorite: Bool
     let onFavoriteTap: () -> Void
+    let viewModel: ProductViewModel
 
     var body: some View {
         HStack(spacing: 12) {
@@ -219,8 +223,10 @@ private struct ProductActionsView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             }
 
-            CustomButton(title: "Add To Cart") {
-                // TODO
+            CustomButton(title: viewModel.inCart ? "Remove from Cart" : "Add to Cart") {
+                Task {
+                   await viewModel.addToCart(productId: product.id)
+                }
             }
         }
         .padding(.horizontal)

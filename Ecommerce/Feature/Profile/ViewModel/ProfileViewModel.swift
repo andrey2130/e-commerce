@@ -5,13 +5,15 @@
 //  Created by Andrii Duda on 29.01.2026.
 //
 
+import Factory
 import SwiftUI
 
 @Observable
 @MainActor
 final class ProfileViewModel {
-    private let profileService: ProfileService = .shared
-    private let localStorage: LocalStorageService = .shared
+    @ObservationIgnored @Injected(\.profileService) private var profileService
+    @ObservationIgnored @Injected(\.localStorageService) private
+        var localStorage
 
     var authState: AuthState = .loading
     var user: UserModel? = nil

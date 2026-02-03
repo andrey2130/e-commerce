@@ -63,13 +63,14 @@ struct CheckFavoriteResponse: Decodable {
 }
 
 @Observable
-final class FavoritesService {
-    static let shared = FavoritesService()
-    private let api = ApiClient(baseURL: URL(string: ApiConst.baseUrl)!)
+final class FavoritesService: FavoritesServiceProtocol {
 
+    private let api: ApiClient
     private(set) var favoriteProductIds: Set<Int> = []
 
-    private init() {}
+    init(api: ApiClient) {
+        self.api = api
+    }
 
     @discardableResult
     func loadFavorites(token: String) async throws -> [FavoriteListItem] {

@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B5C5826D2F30C6E600EC6C3F /* Factory in Frameworks */ = {isa = PBXBuildFile; productRef = B5C5826C2F30C6E600EC6C3F /* Factory */; };
+		B5C5826F2F30C6E600EC6C3F /* FactoryKit in Frameworks */ = {isa = PBXBuildFile; productRef = B5C5826E2F30C6E600EC6C3F /* FactoryKit */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		B5AB4A3B2F27F9B30017262A /* Ecommerce.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Ecommerce.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -36,6 +41,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5C5826F2F30C6E600EC6C3F /* FactoryKit in Frameworks */,
+				B5C5826D2F30C6E600EC6C3F /* Factory in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +85,8 @@
 			);
 			name = Ecommerce;
 			packageProductDependencies = (
+				B5C5826C2F30C6E600EC6C3F /* Factory */,
+				B5C5826E2F30C6E600EC6C3F /* FactoryKit */,
 			);
 			productName = Ecommerce;
 			productReference = B5AB4A3B2F27F9B30017262A /* Ecommerce.app */;
@@ -108,6 +117,7 @@
 			mainGroup = B5AB4A322F27F9B30017262A;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				B5C5826B2F30C6E600EC6C3F /* XCRemoteSwiftPackageReference "Factory" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B5AB4A3C2F27F9B30017262A /* Products */;
@@ -349,6 +359,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B5C5826B2F30C6E600EC6C3F /* XCRemoteSwiftPackageReference "Factory" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/hmlongco/Factory";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B5C5826C2F30C6E600EC6C3F /* Factory */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B5C5826B2F30C6E600EC6C3F /* XCRemoteSwiftPackageReference "Factory" */;
+			productName = Factory;
+		};
+		B5C5826E2F30C6E600EC6C3F /* FactoryKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B5C5826B2F30C6E600EC6C3F /* XCRemoteSwiftPackageReference "Factory" */;
+			productName = FactoryKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B5AB4A332F27F9B30017262A /* Project object */;
 }
