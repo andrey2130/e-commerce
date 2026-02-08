@@ -22,6 +22,9 @@ struct CoordinatorView: View {
                     coordinator.buid(page: page)
                 }
         }
+        .sheet(item: $coordinator.sheet) { page in
+            coordinator.buid(page: page)
+        }
         .environment(favorites)
         .environment(auth)
         .environment(coordinator)

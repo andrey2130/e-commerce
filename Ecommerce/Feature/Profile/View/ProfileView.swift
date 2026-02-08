@@ -78,7 +78,7 @@ struct ProfileView: View {
             // quick actions
             HStack(spacing: 10) {
                 QuickActionPill(icon: "shippingbox", title: "Orders") {
-                    // coordinator.push(.orders)
+                    coordinator.push(.orders)
                 }
                 QuickActionPill(icon: "heart", title: "Wishlist") {}
                 QuickActionPill(icon: "cart", title: "Cart") {
@@ -141,7 +141,10 @@ struct ProfileView: View {
                     icon: "bag",
                     title: "My Orders",
                     subtitle: "Track and manage"
-                ) {}
+                ) {
+                    coordinator.push(.orders)
+
+                }
                 SettingsRow(
                     icon: "location",
                     title: "Addresses",

@@ -9,10 +9,12 @@
 /* Begin PBXBuildFile section */
 		B5C5826D2F30C6E600EC6C3F /* Factory in Frameworks */ = {isa = PBXBuildFile; productRef = B5C5826C2F30C6E600EC6C3F /* Factory */; };
 		B5C5826F2F30C6E600EC6C3F /* FactoryKit in Frameworks */ = {isa = PBXBuildFile; productRef = B5C5826E2F30C6E600EC6C3F /* FactoryKit */; };
+		B5F9DE232F390FD700B5CF5E /* cart_test.storekit in Resources */ = {isa = PBXBuildFile; fileRef = B5F9DE222F390FD700B5CF5E /* cart_test.storekit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		B5AB4A3B2F27F9B30017262A /* Ecommerce.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Ecommerce.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B5F9DE222F390FD700B5CF5E /* cart_test.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = cart_test.storekit; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -52,6 +54,7 @@
 		B5AB4A322F27F9B30017262A = {
 			isa = PBXGroup;
 			children = (
+				B5F9DE222F390FD700B5CF5E /* cart_test.storekit */,
 				B5AB4A3D2F27F9B30017262A /* Ecommerce */,
 				B5AB4A3C2F27F9B30017262A /* Products */,
 			);
@@ -134,6 +137,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5F9DE232F390FD700B5CF5E /* cart_test.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
