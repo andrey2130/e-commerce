@@ -16,12 +16,14 @@ final class ProductViewModel {
     var canLoadMore: Bool = true
     var currentPage: Int = 1
     var selectedProduct: ProductModel?
-    var inCart: Bool = false
 
     @ObservationIgnored @Injected(\.productService) private var productService
-    @ObservationIgnored @Injected(\.localStorageService) private var localStorage
-    @ObservationIgnored @Injected(\.favoritesService) private var favoriteService
+    @ObservationIgnored @Injected(\.localStorageService) private
+        var localStorage
+    @ObservationIgnored @Injected(\.favoritesService) private
+        var favoriteService
     @ObservationIgnored @Injected(\.cartService) private var cartService
+
     var pagination = Pagination()
 
     private var token: String? {
@@ -30,7 +32,6 @@ final class ProductViewModel {
             : nil
     }
 
-    
     private func preloadFavoritesIfNeeded() async {
         guard let token,
             favoriteService.favoriteProductIds.isEmpty
@@ -42,26 +43,11 @@ final class ProductViewModel {
             print("Favorites preload error:", error.localizedDescription)
         }
     }
-    
-    
-    private func preloadCartIfNeeded() async {
-        guard let token,
-              cartService.cartProductIds.isEmpty
-        else { return }
-        
-        do {
-            var cartProduct = try await cartService.getCart(token: token)
-            print("Cart product = \(cartProduct)")
-        } catch {
-            print("Cart preload error:", error.localizedDescription)
-        }
-    }
 
     func loadProducts() async {
         guard pagination.canLoadMore else { return }
 
         await preloadFavoritesIfNeeded()
-        await preloadCartIfNeeded()
 
         do {
             let response = try await productService.getProduct(
@@ -99,7 +85,7 @@ final class ProductViewModel {
         do {
             let response = try await productService.getProductById(id)
             selectedProduct = response.data
-            inCart = cartService.cartProductIds.contains(id)
+
             productDetailsState = .loaded(response.data)
         } catch {
             productDetailsState = .error(error)
@@ -119,36 +105,18 @@ final class ProductViewModel {
         await loadProducts()
     }
 
-    func addToCart(productId: Int, count: Int = 1) async {
-        guard let token else { return }
+    private func preloadCartIfNeeded() async {
+        guard let token,
+            cartService.cartProductIds.isEmpty
+        else { return }
 
         do {
-            _ = try await cartService.addProductToCart(
-                productId: productId,
-                count: count,
-                token: token
-            )
-            inCart = true
+            _ = try await cartService.getCart(token: token)
         } catch {
-            print(error.localizedDescription)
-            productDetailsState = .error(error)
+            print("Cart preload error:", error.localizedDescription)
         }
     }
-    
 
+  
 
-    func removeFromCart(cartItemId: Int, productId: Int) async {
-        guard let token else { return }
-
-        do {
-            try await cartService.removeFromCart(
-                cartItemId: cartItemId,
-                productId: productId,
-                token: token
-            )
-            inCart = false
-        } catch {
-            productDetailsState = .error(error)
-        }
-    }
 }

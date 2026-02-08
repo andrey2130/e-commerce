@@ -81,7 +81,9 @@ struct ProfileView: View {
                     // coordinator.push(.orders)
                 }
                 QuickActionPill(icon: "heart", title: "Wishlist") {}
-                QuickActionPill(icon: "ticket", title: "Coupons") {}
+                QuickActionPill(icon: "cart", title: "Cart") {
+                    coordinator.push(.cart)
+                }
             }
         }
         .padding(16)

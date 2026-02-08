@@ -12,6 +12,7 @@ struct ProductDetailsView: View {
 
     let productId: Int
     @State private var viewModel = Container.shared.productViewModel()
+    @State private var cartViewModel = Container.shared.cartViewModel()
 
     @State private var showAuthAlert: Bool = false
     @Environment(FavoritesViewModel.self) private var favoritesViewModel
@@ -83,12 +84,12 @@ extension ProductDetailsView {
                     ProductActionsView(
                         product: product,
                         isFavorite: favoritesViewModel.isFavorite(product.id),
-                        
+
                         onFavoriteTap: {
                             handleFavoriteTap(product)
 
                         },
-                        viewModel: viewModel
+                        viewModel: cartViewModel
                     )
                 }
             }
@@ -208,7 +209,7 @@ private struct ProductActionsView: View {
     let product: ProductModel
     let isFavorite: Bool
     let onFavoriteTap: () -> Void
-    let viewModel: ProductViewModel
+    let viewModel: CartViewModel
 
     var body: some View {
         HStack(spacing: 12) {
@@ -223,9 +224,19 @@ private struct ProductActionsView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             }
 
-            CustomButton(title: viewModel.inCart ? "Remove from Cart" : "Add to Cart") {
+            CustomButton(
+                title: viewModel.isInCart(productId: product.id)
+                    ? "Remove from Cart" : "Add to Cart"
+            ) {
                 Task {
-                   await viewModel.addToCart(productId: product.id)
+                    if viewModel.isInCart(productId: product.id) {
+                        await viewModel.removeFromCart(
+
+                            productId: product.id
+                        )
+                    } else {
+                        await viewModel.addToCart(productId: product.id)
+                    }
                 }
             }
         }

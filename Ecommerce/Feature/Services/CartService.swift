@@ -12,12 +12,19 @@ struct CartRequest: Encodable {
     let quantity: Int
 }
 
+struct CartQuantityRequest: Encodable {
+    let quantity: Int
+}
+
 struct CartResponse: Decodable {
     let success: Bool
     let data: CartItemModel
 }
 
+@Observable
 final class CartService: CartServiceProtocol {
+    
+    
 
     private let api: ApiClient
     private(set) var cartProductIds: Set<Int> = []
@@ -26,12 +33,14 @@ final class CartService: CartServiceProtocol {
         self.api = api
     }
 
-    func getCart(token: String) async throws -> CartListResponse {
+    func getCart(token: String) async throws -> [CartListItem] {
         var endpoint = Endpoint.get(ApiConst.cart)
+        print("cart endpoint: \(endpoint)")
         endpoint.headers["Authorization"] = "Bearer \(token)"
         let response: CartListResponse = try await api.send(endpoint)
-        cartProductIds = Set(response.data.map { $0.product.id })
-        return response
+        cartProductIds = Set(response.data.map(\.product.id))
+        print("cart response: \(response.data)")
+        return response.data
     }
 
     func addProductToCart(productId: Int, count: Int = 1, token: String)
@@ -52,10 +61,20 @@ final class CartService: CartServiceProtocol {
         let path = "\(ApiConst.cart)/\(cartItemId)"
         var endpoint = Endpoint.delete(path)
         endpoint.headers["Authorization"] = "Bearer \(token)"
-        let _: CartResponse = try await api.send(endpoint)
+        let _: MessageResponse = try await api.send(endpoint)
         cartProductIds.remove(productId)
     }
 
+    func updateQuantity(cartItemId: Int, quantity: Int, token: String) async throws -> CartResponse {
+        let path = "\(ApiConst.cart)/\(cartItemId)"
+        let body = CartQuantityRequest(quantity: quantity)
+        var endpoint = try Endpoint.put(path, body: body)
+        endpoint.headers["Authorization"] = "Bearer \(token)"
+        let response: CartResponse = try await api.send(endpoint)
+        return response
+        
+    }
+    
     func clearCart() {
         cartProductIds.removeAll()
     }

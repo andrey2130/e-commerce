@@ -35,6 +35,13 @@ struct Endpoint {
     static func delete(_ path: String) -> Endpoint {
         Endpoint(path: path, method: .delete)
     }
+
+    static func put<T: Encodable>(_ path: String, body: T) throws -> Endpoint {
+        var e = Endpoint(path: path, method: .put)
+        e.body = try JSONEncoder().encode(body)
+        e.headers["Content-Type"] = "application/json"
+        return e
+    }
 }
 
 final class ApiClient: ApiClientProtocol {

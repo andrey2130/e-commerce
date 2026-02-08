@@ -8,7 +8,7 @@
 import SwiftUI
 
 enum Page: Hashable, Identifiable {
-    case login, launch, register, onboarding, home
+    case login, launch, register, onboarding, home, cart
     case productDetails(id: Int)
 
     var id: String {
@@ -18,6 +18,8 @@ enum Page: Hashable, Identifiable {
         case .register: "register"
         case .onboarding: "onboarding"
         case .home: "home"
+        case .cart: "cart"
+            
         case .productDetails(let id): "productDetails_\(id)"
         }
     }
@@ -55,6 +57,8 @@ class Coordinator {
             BottomNavBar()
         case .productDetails(let id):
             ProductDetailsView(productId: id)
+        case .cart:
+            CartView()
         }
     }
 }

@@ -32,7 +32,7 @@ struct CartListResponse: Codable {
 struct CartListItem: Codable, Identifiable {
     let id: Int
     let product: CartListItemProduct
-    let quantity: Int
+    var quantity: Int
     let subtotal: Double
 }
 
@@ -40,6 +40,7 @@ struct CartListItemProduct: Codable, Identifiable {
     let id: Int
     let name: String?
     let price: String
+    let stock: Int
     let images: [String]?
     let category: Category?
 }
