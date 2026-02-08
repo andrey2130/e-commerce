@@ -98,6 +98,12 @@ extension Container {
         }
         .unique
     }
+    var cartViewModel: Factory<CartViewModel> {
+        self { @MainActor in
+            CartViewModel()
+        }
+        .unique
+    }
 
     // MARK: - Coordinator
 
