@@ -58,7 +58,7 @@ struct LaunchView: View {
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.3) {
                 if localStorageService.isOnboardingCompleted {
-                    coordinator.push(.home)
+                    coordinator.push(.productList)
                 } else {
                     coordinator.push(.onboarding)
                 }

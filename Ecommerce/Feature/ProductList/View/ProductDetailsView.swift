@@ -42,7 +42,7 @@ struct ProductDetailsView: View {
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("You need to be logged in to add products to favorites.")
+            Text("You need to be logged")
         }
         .ignoresSafeArea()
         .task {
@@ -62,38 +62,43 @@ struct ProductDetailsView: View {
 extension ProductDetailsView {
 
     fileprivate func content(product: ProductModel) -> some View {
-        ScrollView {
-            VStack(spacing: 0) {
-
-                ProductImagesView(images: product.images)
-
-                VStack(alignment: .leading, spacing: 16) {
-
-                    ProductHeaderView(product: product)
-
-                    Divider()
-
-                    ProductPriceView(price: product.price)
-
-                    Divider()
-
-                    ProductDescriptionView(
-                        description: product.description
-                    )
-
-                    ProductActionsView(
-                        product: product,
-                        isFavorite: favoritesViewModel.isFavorite(product.id),
-
-                        onFavoriteTap: {
-                            handleFavoriteTap(product)
-
-                        },
-                        viewModel: cartViewModel
-                    )
+        VStack {
+            ScrollView {
+                VStack(spacing: 0) {
+                    
+                    ProductImagesView(images: product.images)
+                    
+                    VStack(alignment: .leading, spacing: 16) {
+                        
+                        ProductHeaderView(product: product)
+                        
+                        Divider()
+                        
+                        ProductPriceView(price: product.price)
+                        
+                        Divider()
+                        
+                        ProductDescriptionView(
+                            description: product.description
+                        )
+                       
+                    }
                 }
             }
+            ProductActionsView(
+                product: product,
+                isFavorite: favoritesViewModel.isFavorite(product.id),
+                onFavoriteTap: {
+                    handleFavoriteTap(product)
+                },
+                viewModel: cartViewModel,
+                onCartTap: {
+                    handleCartTap(product)
+                },
+            )
+            .padding(.all)
         }
+        .safeAreaPadding(.bottom)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 if let product = viewModel.selectedProduct {
@@ -122,6 +127,22 @@ extension ProductDetailsView {
             }
         }
     }
+
+    private func handleCartTap(_ product: ProductModel) {
+        if auth.state == .unauthorized {
+            showAuthAlert = true
+            return
+        }
+
+        Task {
+            if cartViewModel.isInCart(productId: product.id) {
+                await cartViewModel.removeFromCart(productId: product.id)
+            } else {
+                await cartViewModel.addToCart(productId: product.id)
+            }
+        }
+    }
+
 }
 
 // MARK: - Subviews
@@ -210,6 +231,7 @@ private struct ProductActionsView: View {
     let isFavorite: Bool
     let onFavoriteTap: () -> Void
     let viewModel: CartViewModel
+    let onCartTap: () -> Void
 
     var body: some View {
         HStack(spacing: 12) {
@@ -228,20 +250,12 @@ private struct ProductActionsView: View {
                 title: viewModel.isInCart(productId: product.id)
                     ? "Remove from Cart" : "Add to Cart"
             ) {
-                Task {
-                    if viewModel.isInCart(productId: product.id) {
-                        await viewModel.removeFromCart(
-
-                            productId: product.id
-                        )
-                    } else {
-                        await viewModel.addToCart(productId: product.id)
-                    }
-                }
+                onCartTap()
             }
         }
         .padding(.horizontal)
     }
+
 }
 
 #Preview {

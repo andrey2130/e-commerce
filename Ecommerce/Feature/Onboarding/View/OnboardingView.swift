@@ -42,7 +42,7 @@ struct OnboardingView: View {
         .navigationBarBackButtonHidden(true)
         .onChange(of: viewModel.isFinished) { _, finished in
             if finished {
-                coordinator.push(.home)
+                coordinator.push(.productList)
             }
         }
     }

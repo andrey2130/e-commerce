@@ -51,12 +51,12 @@ struct CoordinatorView: View {
             switch deepLink {
             case .product(let id):
                 coordinator.push(.productDetails(id: id))
-            case .home:
+            case .productList:
                 coordinator.popToRoot()
-                coordinator.push(.home)
+                coordinator.push(.productList)
             case .favorites:
                 coordinator.popToRoot()
-                coordinator.push(.home)
+                coordinator.push(.productList)
             }
 
             self.deepLink.reset()

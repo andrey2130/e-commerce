@@ -27,7 +27,7 @@ struct RegisterView: View {
             }
             .onChange(of: viewModel.state == .authorized) { _, registered in
                 if registered {
-                    coordinator.push(.home)
+                    coordinator.push(.productList)
                 }
             }
             .padding(.horizontal, 24)
