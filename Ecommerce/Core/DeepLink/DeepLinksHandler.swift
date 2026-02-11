@@ -9,7 +9,7 @@ import Foundation
 
 enum DeepLinks: Equatable {
     case product(id: Int)
-    case home
+    case productList
     case favorites
 
     init?(url: URL) {
@@ -27,8 +27,8 @@ enum DeepLinks: Equatable {
             } else {
                 return nil
             }
-        case "home":
-            self = .home
+        case "productList":
+            self = .productList
         case "favorites":
             self = .favorites
         default:

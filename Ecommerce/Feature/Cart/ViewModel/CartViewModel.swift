@@ -73,6 +73,8 @@ final class CartViewModel {
     func decreaseQuantity(cartItemId: Int) async {
         await updateQuantity(cartItemId: cartItemId, delta: -1)
     }
+    
+
 
     func removeFromCart(productId: Int) async {
         guard let token else { return }

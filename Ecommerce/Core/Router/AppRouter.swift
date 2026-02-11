@@ -8,8 +8,10 @@
 import SwiftUI
 
 enum Page: Hashable, Identifiable {
-    case login, launch, register, onboarding, home, cart
+    case login, launch, register, onboarding, productList, cart
     case productDetails(id: Int)
+    case checkout
+    case orders
 
     var id: String {
         switch self {
@@ -17,10 +19,11 @@ enum Page: Hashable, Identifiable {
         case .launch: "launch"
         case .register: "register"
         case .onboarding: "onboarding"
-        case .home: "home"
+        case .productList: "productList"
         case .cart: "cart"
-            
+        case .checkout: "checkout"
         case .productDetails(let id): "productDetails_\(id)"
+        case .orders: "orders"
         }
     }
 
@@ -28,6 +31,7 @@ enum Page: Hashable, Identifiable {
 @Observable
 class Coordinator {
     var path = NavigationPath()
+    var sheet: Page?
 
     func push(_ page: Page) {
         path.append(page)
@@ -42,6 +46,14 @@ class Coordinator {
         path.removeLast(path.count)
     }
 
+    func presentSheet(_ page: Page) {
+        sheet = page
+    }
+
+    func dismissSheet() {
+        sheet = nil
+    }
+
     @ViewBuilder
     func buid(page: Page) -> some View {
         switch page {
@@ -53,12 +65,16 @@ class Coordinator {
             RegisterView()
         case .onboarding:
             OnboardingView()
-        case .home:
+        case .productList:
             BottomNavBar()
-        case .productDetails(let id):
-            ProductDetailsView(productId: id)
         case .cart:
             CartView()
+        case .checkout:
+            PaymentSheetView()
+        case .productDetails(let id):
+            ProductDetailsView(productId: id)
+        case .orders:
+            OrdersView()
         }
     }
 }

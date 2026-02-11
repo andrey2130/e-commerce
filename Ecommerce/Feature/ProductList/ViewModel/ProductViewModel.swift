@@ -117,6 +117,4 @@ final class ProductViewModel {
         }
     }
 
-  
-
 }

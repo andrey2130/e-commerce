@@ -10,20 +10,20 @@ import SwiftUI
 struct BottomNavBar: View {
 
     enum Tab {
-        case home, favorites, profile
+        case productList, favorites, profile
     }
 
-    @State private var selectedTab: Tab = .home
+    @State private var selectedTab: Tab = .productList
     @Environment(DeepLinkManager.self) private var deepLink
     @Environment(Coordinator.self) private var coordinator
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            HomeView()
+            ProductListView()
                 .tabItem {
-                    Label("Home", systemImage: "house")
+                    Label("Product List", systemImage: "house")
                 }
-                .tag(Tab.home)
+                .tag(Tab.productList)
             FavoritesView()
                 .tabItem {
                     Label("Favorites", systemImage: "heart")
@@ -53,8 +53,8 @@ struct BottomNavBar: View {
                 coordinator.push(.productDetails(id: id))
             case .favorites:
                 selectedTab = .favorites
-            case .home:
-                selectedTab = .home
+            case .productList:
+                selectedTab = .productList
             }
 
             deepLink.reset()

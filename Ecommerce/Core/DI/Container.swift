@@ -69,6 +69,12 @@ extension Container {
             .singleton
     }
 
+    var orderService: Factory<OrdersServiceProtocol> {
+        self { OrderService(api: self.apiClient()) }
+            .singleton
+
+    }
+
     // MARK: - ViewModels Layer
 
     var authViewModel: Factory<AuthViewModel> {
@@ -104,6 +110,12 @@ extension Container {
         }
         .unique
     }
+    var paymentViewModel: Factory<PaymentViewModel> {
+        self { @MainActor in
+            PaymentViewModel()
+        }
+        .unique
+    }
 
     // MARK: - Coordinator
 
@@ -111,4 +123,10 @@ extension Container {
         self { Coordinator() }
             .singleton
     }
+
+    var orderManager: Factory<StoreKitManager> {
+        self { @MainActor in StoreKitManager() }
+            .singleton
+    }
+
 }

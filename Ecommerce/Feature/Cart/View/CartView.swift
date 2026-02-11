@@ -9,7 +9,7 @@ import SwiftUI
 
 struct CartView: View {
     @State private var viewModel = CartViewModel()
-
+    @Environment(Coordinator.self) private var coordinator
     var body: some View {
         VStack {
             switch viewModel.cartState {
@@ -162,7 +162,7 @@ struct CartView: View {
                 .fontWeight(.bold)
                 .foregroundStyle(.primary)
             CustomButton(title: "Checkout") {
-
+                coordinator.presentSheet(.checkout)
             }
         }
         .padding(.horizontal)

@@ -1,5 +1,5 @@
 //
-//  HomeView.swift
+//  ProductListView.swift
 //  Ecommerce
 //
 //  Created by Andrii Duda on 27.01.2026.
@@ -8,7 +8,7 @@
 import Factory
 import SwiftUI
 
-struct HomeView: View {
+struct ProductListView: View {
     @State private var viewModel = Container.shared.productViewModel()
     @State private var showAuthAlert: Bool = false
 
@@ -46,7 +46,6 @@ struct HomeView: View {
             Text("You need to be logged in to add products to favorites.")
         }
         .onAppear {
-            print("HomeView appeared")
             print("Auth state: \(auth.state)")
             print("Alert state: \(showAuthAlert)")
         }
@@ -62,7 +61,7 @@ struct HomeView: View {
 
 // MARK: - Content
 
-extension HomeView {
+extension ProductListView {
 
     fileprivate func content(products: [ProductModel]) -> some View {
         ScrollView {
@@ -135,7 +134,7 @@ extension HomeView {
 
 // MARK: - States
 
-extension HomeView {
+extension ProductListView {
 
     fileprivate var emptyState: some View {
         VStack(spacing: 12) {
@@ -160,5 +159,5 @@ extension HomeView {
 // MARK: - Preview
 
 #Preview {
-    HomeView()
+    ProductListView()
 }

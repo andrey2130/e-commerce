@@ -14,4 +14,5 @@ enum ApiConst {
     static let getUserInfo: String = "auth/me"
     static let favorites: String = "favorites"
     static let cart: String = "cart"
+    static let orders: String = "orders"
 }
