@@ -27,8 +27,8 @@ struct ProductListView: View {
             case .idle, .loading:
                 ProgressView()
 
-            case .loaded(let products):
-                content(products: products)
+            case .loaded:
+                content(products: viewModel.displayedProducts)
 
             case .empty:
                 emptyState
@@ -45,11 +45,6 @@ struct ProductListView: View {
         } message: {
             Text("You need to be logged in to add products to favorites.")
         }
-        .onAppear {
-            print("Auth state: \(auth.state)")
-            print("Alert state: \(showAuthAlert)")
-        }
-
         .navigationBarBackButtonHidden(true)
         .task {
             if case .idle = viewModel.productsState {
@@ -69,7 +64,7 @@ extension ProductListView {
                 header
                 grid(products: products)
 
-                if viewModel.pagination.isLoadingMore {
+                if currentPaginationState.isLoadingMore {
                     HStack {
                         Spacer()
                         ProgressView()
@@ -83,15 +78,68 @@ extension ProductListView {
     }
 
     fileprivate var header: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 16) {
             Text("Discover")
                 .font(AppFont.largeTitle)
 
             Text("Find your prefect items")
                 .font(AppFont.subTitle)
                 .foregroundStyle(.gray)
+
+            HStack(spacing: 12) {
+                HStack(spacing: 8) {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundStyle(.gray)
+                        .font(.system(size: 16))
+
+                    TextField("Search products", text: $viewModel.searchText)
+                        .autocorrectionDisabled()
+                        .textInputAutocapitalization(.never)
+
+                    if !viewModel.searchText.isEmpty {
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                viewModel.searchText = ""
+                                viewModel.searchResults.removeAll()
+                            }
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundStyle(.gray)
+                                .font(.system(size: 16))
+                        }
+                        .buttonStyle(.plain)
+                        .transition(.scale.combined(with: .opacity))
+                    }
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(Color(.systemGray6))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(
+                            Color(.systemGray4).opacity(0.3),
+                            lineWidth: 0.5
+                        )
+                )
+            }
+            .animation(
+                .easeInOut(duration: 0.2),
+                value: viewModel.searchText.isEmpty
+            )
+            .onChange(of: viewModel.searchText) { _, newValue in
+                Task {
+                    if newValue.isEmpty {
+                        viewModel.searchResults.removeAll()
+                        viewModel.searchPagination.reset()
+                    } else {
+                        await viewModel.searchProducts(reset: true)
+                    }
+                }
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.bottom, 8)
     }
 
     fileprivate func grid(products: [ProductModel]) -> some View {
@@ -107,7 +155,13 @@ extension ProductListView {
                     coordinator.push(.productDetails(id: product.id))
                 }
                 .task {
-                    await viewModel.loadMoreIfNeeded(currentItem: product)
+                    if viewModel.isSearching {
+                        await viewModel.loadMoreSearchIfNeeded(
+                            currentItem: product
+                        )
+                    } else {
+                        await viewModel.loadMoreIfNeeded(currentItem: product)
+                    }
                 }
             }
             .padding(.top, 16)
@@ -129,6 +183,11 @@ extension ProductListView {
                 await favoriteViewModel.setAsFavorites(id: product.id)
             }
         }
+    }
+
+    private var currentPaginationState: Pagination {
+        viewModel.isSearching
+            ? viewModel.searchPagination : viewModel.pagination
     }
 }
 

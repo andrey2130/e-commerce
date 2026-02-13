@@ -10,13 +10,6 @@ import SwiftUI
 @Observable
 @MainActor
 final class ProductViewModel {
-    var products: [ProductModel] = []
-    var productsState: Loadable<[ProductModel]> = .idle
-    var productDetailsState: Loadable<ProductModel> = .idle
-    var canLoadMore: Bool = true
-    var currentPage: Int = 1
-    var selectedProduct: ProductModel?
-
     @ObservationIgnored @Injected(\.productService) private var productService
     @ObservationIgnored @Injected(\.localStorageService) private
         var localStorage
@@ -24,7 +17,19 @@ final class ProductViewModel {
         var favoriteService
     @ObservationIgnored @Injected(\.cartService) private var cartService
 
+    var products: [ProductModel] = []
+    var searchResults: [ProductModel] = []
+    var productsState: Loadable<[ProductModel]> = .idle
+    var productDetailsState: Loadable<ProductModel> = .idle
+    var canLoadMore: Bool = true
+    var currentPage: Int = 1
+    var selectedProduct: ProductModel?
     var pagination = Pagination()
+    var searchPagination = Pagination()
+    var searchText: String = ""
+    var isSearching: Bool {
+        !searchText.isEmpty
+    }
 
     private var token: String? {
         localStorage.getToken()?.isEmpty == false
@@ -77,6 +82,38 @@ final class ProductViewModel {
         pagination.isLoadingMore = false
     }
 
+    func searchProducts(reset: Bool = false) async {
+        guard !searchText.isEmpty else { return }
+
+        if reset {
+            searchPagination.reset()
+            searchResults.removeAll()
+        }
+
+        guard searchPagination.canLoadMore else { return }
+
+        do {
+            let response = try await productService.searchProduct(
+                page: searchPagination.page,
+                limit: 10,
+                search: searchText
+            )
+
+            let newItems = response.data
+            guard !newItems.isEmpty else {
+                searchPagination.stop()
+                return
+            }
+            searchResults.append(contentsOf: newItems)
+
+            searchPagination.nextPage()
+        } catch {
+            print("seariching error")
+        }
+
+        searchPagination.isLoadingMore = false
+    }
+
     func loadProductDetails(id: Int) async {
         productDetailsState = .loading
         await preloadFavoritesIfNeeded()
@@ -105,6 +142,19 @@ final class ProductViewModel {
         await loadProducts()
     }
 
+    func loadMoreSearchIfNeeded(currentItem item: ProductModel?) async {
+        guard
+            let item,
+            searchPagination.canLoadMore,
+            let last = searchResults.last,
+            !searchPagination.isLoadingMore,
+            last.id == item.id
+        else { return }
+
+        searchPagination.isLoadingMore = true
+        await searchProducts()
+    }
+
     private func preloadCartIfNeeded() async {
         guard let token,
             cartService.cartProductIds.isEmpty
@@ -117,4 +167,11 @@ final class ProductViewModel {
         }
     }
 
+    var displayedProducts: [ProductModel] {
+        if searchText.isEmpty {
+            return products
+        } else {
+            return searchResults
+        }
+    }
 }

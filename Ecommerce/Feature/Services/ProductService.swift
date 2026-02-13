@@ -30,6 +30,16 @@ final class ProductService: ProductServiceProtocol {
         print("Endpoint body \(endpoint.query)")
         return try await api.send(endpoint)
     }
+    
+    func searchProduct(page: Int, limit: Int = 10, search: String) async throws -> ProductListModel {
+        let query = [
+            URLQueryItem(name: "page", value: "\(page)"),
+            URLQueryItem(name: "limit", value: "\(limit)"),
+            URLQueryItem(name: "search", value: search),
+        ]
+        let endpoint = Endpoint.get("\(ApiConst.getProductUrl)", query: query)
+        return try await api.send(endpoint)
+    }
 
     func getProductById(_ id: Int) async throws -> ProductDetailsRequest {
         let endpoint = Endpoint.get("\(ApiConst.getProductById)/\(id)")
