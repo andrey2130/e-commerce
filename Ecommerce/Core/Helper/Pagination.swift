@@ -19,4 +19,10 @@ class Pagination {
     func stop() {
         canLoadMore = false
     }
+    
+    func reset() {
+        page = 1
+        canLoadMore = true
+        isLoadingMore = false
+    }
 }
