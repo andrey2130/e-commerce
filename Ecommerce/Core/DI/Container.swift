@@ -72,7 +72,11 @@ extension Container {
     var orderService: Factory<OrdersServiceProtocol> {
         self { OrderService(api: self.apiClient()) }
             .singleton
+    }
 
+    var categoriesService: Factory<CategoryServiceProtocol> {
+        self { CategoryService(api: self.apiClient()) }
+            .singleton
     }
 
     // MARK: - ViewModels Layer

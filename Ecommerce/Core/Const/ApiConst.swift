@@ -15,4 +15,5 @@ enum ApiConst {
     static let favorites: String = "favorites"
     static let cart: String = "cart"
     static let orders: String = "orders"
+    static let categories: String = "categories"
 }

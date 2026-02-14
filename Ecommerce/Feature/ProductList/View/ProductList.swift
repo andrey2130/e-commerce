@@ -15,6 +15,7 @@ struct ProductListView: View {
     @Environment(Coordinator.self) private var coordinator
     @Environment(AuthViewModel.self) private var auth
     @Environment(FavoritesViewModel.self) private var favoriteViewModel
+
     private let columns = [
         GridItem(.flexible(), spacing: 16),
         GridItem(.flexible(), spacing: 16),
@@ -48,6 +49,7 @@ struct ProductListView: View {
         .navigationBarBackButtonHidden(true)
         .task {
             if case .idle = viewModel.productsState {
+                await viewModel.loadCategories()
                 await viewModel.loadProducts()
             }
         }
@@ -62,6 +64,7 @@ extension ProductListView {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 header
+                categoryFilter
                 grid(products: products)
 
                 if currentPaginationState.isLoadingMore {
@@ -82,10 +85,11 @@ extension ProductListView {
             Text("Discover")
                 .font(AppFont.largeTitle)
 
-            Text("Find your prefect items")
+            Text("Find your perfect items")
                 .font(AppFont.subTitle)
                 .foregroundStyle(.gray)
 
+            
             HStack(spacing: 12) {
                 HStack(spacing: 8) {
                     Image(systemName: "magnifyingglass")
@@ -142,6 +146,35 @@ extension ProductListView {
         .padding(.bottom, 8)
     }
 
+    fileprivate var categoryFilter: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 12) {
+
+                CategoryChip(
+                    title: "All",
+                    isSelected: viewModel.selectedCategory == nil
+                ) {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        viewModel.filterByCategory(nil)
+                    }
+                }
+
+                ForEach(viewModel.categories) { category in
+                    CategoryChip(
+                        title: category.name,
+                        count: category.productCount,
+                        isSelected: viewModel.selectedCategory == category.id
+                    ) {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            viewModel.filterByCategory(category.id)
+                        }
+                    }
+                }
+            }
+        }
+        .padding(.vertical, 12)
+    }
+
     fileprivate func grid(products: [ProductModel]) -> some View {
         LazyVGrid(columns: columns, spacing: 16) {
             ForEach(products) { product in
@@ -188,6 +221,48 @@ extension ProductListView {
     private var currentPaginationState: Pagination {
         viewModel.isSearching
             ? viewModel.searchPagination : viewModel.pagination
+    }
+}
+
+// MARK: - Category Chip Component
+
+struct CategoryChip: View {
+    let title: String
+    var count: Int? = nil
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 4) {
+                Text(title)
+                    .font(
+                        .system(
+                            size: 14,
+                            weight: isSelected ? .semibold : .regular
+                        )
+                    )
+
+                if let count = count {
+                    Text("(\(count))")
+                        .font(.system(size: 12))
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(isSelected ? Color.black : Color(.systemGray6))
+            .foregroundColor(isSelected ? .white : .black)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .overlay(
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(
+                        isSelected
+                            ? Color.clear : Color(.systemGray4).opacity(0.3),
+                        lineWidth: 0.5
+                    )
+            )
+        }
+        .buttonStyle(.plain)
     }
 }
 

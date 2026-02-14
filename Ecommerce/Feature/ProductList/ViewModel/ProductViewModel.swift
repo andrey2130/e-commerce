@@ -1,23 +1,24 @@
-import Factory
 //
 //  ProductViewModel.swift
 //  Ecommerce
 //
 //  Created by Andrii Duda on 27.01.2026.
 //
+import Factory
 import SwiftUI
 
 @Observable
 @MainActor
 final class ProductViewModel {
     @ObservationIgnored @Injected(\.productService) private var productService
-    @ObservationIgnored @Injected(\.localStorageService) private
-        var localStorage
-    @ObservationIgnored @Injected(\.favoritesService) private
-        var favoriteService
+    @ObservationIgnored @Injected(\.localStorageService) private var localStorage
+    @ObservationIgnored @Injected(\.favoritesService) private var favoriteService
     @ObservationIgnored @Injected(\.cartService) private var cartService
+    @ObservationIgnored @Injected(\.categoriesService) private var categoryService
 
     var products: [ProductModel] = []
+    var categories: [CategoryModel] = []
+    var selectedCategory: Int? = nil
     var searchResults: [ProductModel] = []
     var productsState: Loadable<[ProductModel]> = .idle
     var productDetailsState: Loadable<ProductModel> = .idle
@@ -27,6 +28,7 @@ final class ProductViewModel {
     var pagination = Pagination()
     var searchPagination = Pagination()
     var searchText: String = ""
+    
     var isSearching: Bool {
         !searchText.isEmpty
     }
@@ -55,10 +57,20 @@ final class ProductViewModel {
         await preloadFavoritesIfNeeded()
 
         do {
-            let response = try await productService.getProduct(
-                page: pagination.page,
-                limit: 10
-            )
+            let response: ProductListModel
+            
+            if let categoryId = selectedCategory {
+                response = try await productService.getProductsByCategory(
+                    page: pagination.page,
+                    limit: 10,
+                    categoryId: categoryId
+                )
+            } else {
+                response = try await productService.getProduct(
+                    page: pagination.page,
+                    limit: 10
+                )
+            }
 
             let newItems = response.data
             guard !newItems.isEmpty else {
@@ -80,6 +92,27 @@ final class ProductViewModel {
         }
 
         pagination.isLoadingMore = false
+    }
+    
+    func loadCategories() async {
+        do {
+            let response = try await categoryService.getCategories()
+            categories = response.data
+        } catch {
+            print("Error loading categories: \(error)")
+        }
+    }
+    
+    func filterByCategory(_ categoryId: Int?) {
+        selectedCategory = categoryId
+        
+        products.removeAll()
+        pagination.reset()
+        productsState = .idle
+        
+        Task {
+            await loadProducts()
+        }
     }
 
     func searchProducts(reset: Bool = false) async {
@@ -108,7 +141,7 @@ final class ProductViewModel {
 
             searchPagination.nextPage()
         } catch {
-            print("seariching error")
+            print("searching error")
         }
 
         searchPagination.isLoadingMore = false

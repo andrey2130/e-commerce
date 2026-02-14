@@ -46,5 +46,14 @@ final class ProductService: ProductServiceProtocol {
         print("\(endpoint)")
         return try await api.send(endpoint)
     }
-
+    
+    func getProductsByCategory(page: Int, limit: Int, categoryId: Int) async throws -> ProductListModel {
+        let query = [
+            URLQueryItem(name: "page", value: "\(page)"),
+            URLQueryItem(name: "limit", value: "\(limit)"),
+            URLQueryItem(name: "categoryId", value: "\(categoryId)"),
+        ]
+        let endpoint = Endpoint.get("\(ApiConst.getProductUrl)", query: query)
+        return try await api.send(endpoint)
+    }
 }
