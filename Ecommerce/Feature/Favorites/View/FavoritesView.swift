@@ -136,7 +136,7 @@ struct FavoriteCard: View {
     let onTap: () -> Void
 
     var body: some View {
-        HStack(spacing: 16) {
+        HStack( spacing: 16) {
 
             productImage
 
@@ -162,9 +162,10 @@ struct FavoriteCard: View {
                     .font(AppFont.title2)
                     .fontWeight(.bold)
             }
-
+            Spacer()
             removeButton
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
         .background(Color(.secondarySystemGroupedBackground))
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
